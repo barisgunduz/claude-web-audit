@@ -14,3 +14,7 @@
 - Judge IPv6 addresses by their bytes and refuse public names that resolve to private addresses.
 - Read sitemaps that start with a stylesheet instruction, as sitemap plugins write them.
 - Check the address of every connection inside the DNS lookup of the socket, which stops DNS rebinding. Add undici as a dependency for this.
+- Add the speed module with two Lighthouse engines (PageSpeed Insights and local Lighthouse), automatic fallback, median of several runs and direct compression and caching checks.
+- Add the a11y module, which runs axe-core in the installed Chrome.
+- Add `cwa doctor`, and the config fields `speedPages`, `a11yPages` and `chromePath`.
+- Lower the supported Node version to 22.19 (the lowest that Lighthouse supports) and run CI on 22.19.0 and the current LTS.

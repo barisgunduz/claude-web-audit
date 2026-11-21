@@ -25,10 +25,10 @@ Each module scores 0 to 100. Default weights are in the last column and can be c
 | `content` | 5 | 7 | implemented |
 | `email` | 4 | 12 | implemented, DKIM needs selectors |
 | `ai` | 4 | 10 | implemented |
-| `speed` | 0 | 0 | not measured, "implemented in step 4" |
-| `a11y` | 0 | 0 | not measured, "implemented in step 4" |
+| `speed` | 3 | 32 | implemented, needs PageSpeed Insights or Chrome for the Lighthouse part |
+| `a11y` | 1 | 2 | implemented, needs Chrome |
 
-Every code is listed with its severity and fix in [checks.md](checks.md). The crawler reads static HTML only and runs no JavaScript.
+Every code is listed with its severity and fix in [checks.md](checks.md). The crawler reads static HTML only and runs no JavaScript. The speed and a11y modules use a browser, see [speed-and-engines.md](speed-and-engines.md).
 
 ## How to read the results
 
@@ -38,6 +38,14 @@ Every code is listed with its severity and fix in [checks.md](checks.md). The cr
 - Statuses 401, 403, 429 and 999 on external links are not reported as broken, because sites often return them to automated clients.
 - AI bot names and purposes come from each vendor's own documentation, with the source URL next to each entry in `src/modules/ai/bots.ts`. The Content-Signal syntax follows the Cloudflare announcement of 2025-09-24, because the formal specification page could not be read. Unrecognized signal names are reported as unrecognized, not as errors in the file.
 - Blocked AI training bots are listed in the facts, and not reported as findings. Blocked search and user-triggered bots are reported as an improvement.
+
+## Speed and accessibility
+
+- The speed module has two parts. The Lighthouse part (metrics and audits) measures the home page and the most linked pages, on mobile and desktop. The header part checks compression and caching of the HTML and up to 30 same-site static assets from response headers, and needs no browser. If only one part can run, the module is "partial" and says why.
+- Lighthouse numbers differ between PageSpeed Insights and a local run, and between runs. That is expected. See [speed-and-engines.md](speed-and-engines.md).
+- The a11y module runs axe-core in Chrome on up to `a11yPages` pages. Automated checks find only part of the accessibility problems. A page with no axe findings can still have problems, such as unclear wording or a bad reading order.
+- Lighthouse 13 replaced several older audits with "insight" audits. This tool uses the audits that exist in the installed Lighthouse version. When Lighthouse is updated, `audit-findings.json` may need new audit ids.
+- Chrome launched by the tool visits the pages that were crawled, and page scripts run as in any browser. Requests from the browser to private addresses are blocked in the axe runs. Local Lighthouse runs cannot be filtered in the same way, so audit only sites that you trust.
 
 ## Not measured
 

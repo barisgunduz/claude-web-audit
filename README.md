@@ -8,14 +8,14 @@ claude-web-audit audits a website end to end. It crawls the site, runs nine modu
 
 ## Status
 
-Under construction. The crawler and seven of the nine modules work (links, ssl, headers, seo, content, email and ai). They write `audit.json` and print a summary. Speed and accessibility report "not measured" until step 4. Scoring, the PDF report, the card and the fix plan are not written yet. The other subcommands exit with code 2. The full plan is in [SCOPE.md](SCOPE.md).
+Under construction. The crawler and all nine modules work, including speed (PageSpeed Insights or local Lighthouse) and accessibility (axe-core). They write `audit.json` and print a summary, and `cwa doctor` checks your setup. Scoring, the PDF report, the card and the fix plan are not written yet. The other subcommands exit with code 2. The full plan is in [SCOPE.md](SCOPE.md).
 
 Roadmap:
 
 1. Lock scope and architecture (done)
 2. Repo skeleton and English doc structure (done)
-3. Crawler and checks (done for seven modules, in review)
-4. PageSpeed integration with local Lighthouse fallback
+3. Crawler and checks (done)
+4. PageSpeed integration with local Lighthouse fallback (done, in review)
 5. Scoring and findings model
 6. FIX_PLAN.md generator and Claude instructions
 7. PDF report template, card and social slides (themeable)
@@ -58,9 +58,9 @@ Each audit writes to `audits/<domain>/<date>/`:
 
 ## Requirements
 
-- Node.js 26 (the active LTS). An `.nvmrc` file is included.
-- Google Chrome or Chromium, for Lighthouse and for PDF and PNG output.
-- Optional: a PageSpeed Insights API key in the `PSI_API_KEY` environment variable. Without it, the tool uses local Lighthouse. The key is only read from the environment and is never written to a file, a report or a log.
+- Node.js 22.19 or newer (the lowest version that Lighthouse supports). An `.nvmrc` file pins the current LTS (26).
+- Google Chrome or Chromium, for local Lighthouse, axe-core and PDF and PNG output. The tool uses the Chrome that is installed on your machine and does not download one.
+- Optional: a PageSpeed Insights API key in the `PSI_API_KEY` environment variable. Without it, the tool uses local Lighthouse (see [docs/speed-and-engines.md](docs/speed-and-engines.md)). The key is only read from the environment and is never written to a file, a report or a log.
 
 ## Languages
 
@@ -77,6 +77,8 @@ Audit your own sites and sites you have permission to audit. The crawler obeys r
 - [docs/parameters.md](docs/parameters.md)
 - [docs/modules.md](docs/modules.md)
 - [docs/fix-plan.md](docs/fix-plan.md)
+- [docs/speed-and-engines.md](docs/speed-and-engines.md)
+- [docs/checks.md](docs/checks.md)
 - [docs/architecture.md](docs/architecture.md)
 
 ## Contributing
