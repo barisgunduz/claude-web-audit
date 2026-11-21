@@ -1,3 +1,4 @@
-import type { ModulePlaceholder } from '../types.js';
+import type { ModuleDefinition } from '../types.js';
+import { contentChecks } from './checks.js';
 
-export const contentModule: ModulePlaceholder = { name: 'content', implemented: false };
+export const contentModule: ModuleDefinition = { name: 'content', checks: contentChecks };

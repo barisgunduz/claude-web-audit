@@ -1,3 +1,7 @@
-import type { ModulePlaceholder } from '../types.js';
+import type { ModuleDefinition } from '../types.js';
 
-export const speedModule: ModulePlaceholder = { name: 'speed', implemented: false };
+export const speedModule: ModuleDefinition = {
+  name: 'speed',
+  checks: [],
+  notMeasuredReason: 'implemented in step 4',
+};

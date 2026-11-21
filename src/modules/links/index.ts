@@ -1,3 +1,4 @@
-import type { ModulePlaceholder } from '../types.js';
+import type { ModuleDefinition } from '../types.js';
+import { linksChecks } from './checks.js';
 
-export const linksModule: ModulePlaceholder = { name: 'links', implemented: false };
+export const linksModule: ModuleDefinition = { name: 'links', checks: linksChecks };

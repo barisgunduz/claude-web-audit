@@ -1,3 +1,4 @@
-import type { ModulePlaceholder } from '../types.js';
+import type { ModuleDefinition } from '../types.js';
+import { emailChecks } from './checks.js';
 
-export const emailModule: ModulePlaceholder = { name: 'email', implemented: false };
+export const emailModule: ModuleDefinition = { name: 'email', checks: emailChecks };

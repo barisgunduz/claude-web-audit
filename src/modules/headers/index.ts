@@ -1,3 +1,4 @@
-import type { ModulePlaceholder } from '../types.js';
+import type { ModuleDefinition } from '../types.js';
+import { headersChecks } from './checks.js';
 
-export const headersModule: ModulePlaceholder = { name: 'headers', implemented: false };
+export const headersModule: ModuleDefinition = { name: 'headers', checks: headersChecks };

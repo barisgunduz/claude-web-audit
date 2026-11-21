@@ -1,3 +1,4 @@
-import type { ModulePlaceholder } from '../types.js';
+import type { ModuleDefinition } from '../types.js';
+import { aiChecks } from './checks.js';
 
-export const aiModule: ModulePlaceholder = { name: 'ai', implemented: false };
+export const aiModule: ModuleDefinition = { name: 'ai', checks: aiChecks };

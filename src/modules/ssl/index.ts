@@ -1,3 +1,4 @@
-import type { ModulePlaceholder } from '../types.js';
+import type { ModuleDefinition } from '../types.js';
+import { sslChecks } from './checks.js';
 
-export const sslModule: ModulePlaceholder = { name: 'ssl', implemented: false };
+export const sslModule: ModuleDefinition = { name: 'ssl', checks: sslChecks };
