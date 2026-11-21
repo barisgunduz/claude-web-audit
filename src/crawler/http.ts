@@ -1,9 +1,29 @@
 import type { ReadableStreamDefaultReader } from 'node:stream/web';
-import { isIP } from 'node:net';
-import { isPrivateAddress, isPrivateHost, type HostResolver } from './address.js';
+import { isPrivateHost } from './address.js';
 
 /** The error text for a request that was refused because the address is private. */
 export const BLOCKED_MESSAGE = 'Blocked: private address';
+/** The error code that the guarded DNS lookup sets, so that the client can name the reason. */
+export const BLOCKED_CODE = 'ECWA_BLOCKED_PRIVATE';
+
+/** What the client needs from a response. Both the global fetch and undici's fetch fit it. */
+export interface FetchResponse {
+  status: number;
+  headers: {
+    forEach(callback: (value: string, name: string) => void): void;
+    getSetCookie(): string[];
+  };
+  body: { getReader(): unknown; cancel(): Promise<void> } | null;
+}
+
+export interface FetchInit {
+  method: 'GET' | 'HEAD';
+  redirect: 'manual';
+  signal: AbortSignal;
+  headers: Record<string, string>;
+}
+
+export type FetchFunction = (url: string, init: FetchInit) => Promise<FetchResponse>;
 
 export interface HttpOptions {
   userAgent: string;
@@ -11,14 +31,12 @@ export interface HttpOptions {
   maxBodyBytes: number;
   /** Minimum time between two requests to the same host. */
   delayMs: number;
-  fetchImpl?: typeof fetch;
+  fetchImpl?: FetchFunction;
   sleep?: (ms: number) => Promise<void>;
   now?: () => number;
   signal?: AbortSignal;
   /** Allow private addresses. Only for an audit of a site that is itself on a private address. */
   allowPrivateHosts?: boolean;
-  /** Resolves a name before the first request, to refuse names that point at private addresses. */
-  resolveHost?: HostResolver;
 }
 
 export type BodyMode = 'text' | 'bytes' | 'none';
@@ -58,6 +76,11 @@ function defaultSleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function isBlockedLookup(error: unknown): boolean {
+  const cause = error instanceof Error ? error.cause : undefined;
+  return cause instanceof Error && 'code' in cause && cause.code === BLOCKED_CODE;
+}
+
 function describeNetworkError(error: unknown): string {
   if (error instanceof Error) {
     const cause = error.cause;
@@ -69,7 +92,7 @@ function describeNetworkError(error: unknown): string {
 }
 
 async function readBody(
-  response: Response,
+  response: FetchResponse,
   limit: number,
   signal: AbortSignal,
 ): Promise<{ bytes: Uint8Array; truncated: boolean }> {
@@ -102,18 +125,17 @@ async function readBody(
 export class HttpClient {
   readonly userAgent: string;
   private readonly options: HttpOptions;
-  private readonly fetchImpl: typeof fetch;
+  private readonly fetchImpl: FetchFunction;
   private readonly sleep: (ms: number) => Promise<void>;
   private readonly now: () => number;
   private readonly nextSlot = new Map<string, number>();
   private delayMs: number;
-  private readonly publicHosts = new Map<string, Promise<void>>();
 
   constructor(options: HttpOptions) {
     this.options = options;
     this.delayMs = options.delayMs;
     this.userAgent = options.userAgent;
-    this.fetchImpl = options.fetchImpl ?? fetch;
+    this.fetchImpl = options.fetchImpl ?? ((url, init) => fetch(url, init));
     this.sleep = options.sleep ?? defaultSleep;
     this.now = options.now ?? Date.now;
   }
@@ -121,28 +143,6 @@ export class HttpClient {
   /** Raises the delay between requests, for example to follow a Crawl-delay line. It never lowers it. */
   raiseDelay(ms: number): void {
     this.delayMs = Math.max(this.delayMs, ms);
-  }
-
-  /** Looks a host name up once and refuses it when any address is private. */
-  private assertPublic(hostname: string): Promise<void> {
-    const { resolveHost, allowPrivateHosts } = this.options;
-    if (allowPrivateHosts || !resolveHost || isIP(hostname.replace(/^\[|\]$/g, '')) !== 0) {
-      return Promise.resolve();
-    }
-    const known = this.publicHosts.get(hostname);
-    if (known) return known;
-    const check = resolveHost(hostname).then(
-      (addresses) => {
-        if (addresses.some((address) => isPrivateAddress(address))) {
-          throw new HttpError('blocked', BLOCKED_MESSAGE);
-        }
-      },
-      () => {
-        throw new HttpError('network', 'Name could not be resolved');
-      },
-    );
-    this.publicHosts.set(hostname, check);
-    return check;
   }
 
   private async waitForTurn(host: string): Promise<void> {
@@ -168,7 +168,6 @@ export class HttpClient {
     if (!this.options.allowPrivateHosts && isPrivateHost(target.hostname)) {
       throw new HttpError('blocked', BLOCKED_MESSAGE);
     }
-    await this.assertPublic(target.hostname);
     await this.waitForTurn(target.host);
 
     const timeout = AbortSignal.timeout(this.options.timeoutMs);
@@ -213,6 +212,7 @@ export class HttpClient {
     } catch (error) {
       if (stop?.aborted) throw new HttpError('aborted', 'Stopped');
       if (timeout.aborted) throw new HttpError('timeout', 'Timed out');
+      if (isBlockedLookup(error)) throw new HttpError('blocked', BLOCKED_MESSAGE);
       throw new HttpError('network', describeNetworkError(error));
     }
   }

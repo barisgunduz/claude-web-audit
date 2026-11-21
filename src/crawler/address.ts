@@ -1,4 +1,3 @@
-import { lookup } from 'node:dns/promises';
 import { isIP } from 'node:net';
 
 const PRIVATE_SUFFIXES = ['.localhost', '.local', '.internal', '.localdomain', '.home.arpa'];
@@ -88,7 +87,8 @@ export function isPrivateAddress(address: string): boolean {
 
 /**
  * True for names and addresses that point at the local machine or a private network.
- * This looks at the written host. Use `lookupAll` as well to judge what a name resolves to.
+ * This looks at the written host only. The connection itself is guarded by the transport in
+ * guarded-fetch.ts, which judges the address that a name resolves to.
  */
 export function isPrivateHost(hostname: string): boolean {
   const host = hostname
@@ -98,11 +98,3 @@ export function isPrivateHost(hostname: string): boolean {
   if (host === 'localhost' || PRIVATE_SUFFIXES.some((suffix) => host.endsWith(suffix))) return true;
   return isPrivateAddress(host);
 }
-
-export type HostResolver = (hostname: string) => Promise<string[]>;
-
-/** Every address that a name resolves to. */
-export const lookupAll: HostResolver = async (hostname) => {
-  const records = await lookup(hostname, { all: true });
-  return records.map((record) => record.address);
-};

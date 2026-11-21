@@ -38,6 +38,7 @@
     "vitest": "5.1.1"
   },
   "dependencies": {
-    "cheerio": "1.2.0"
+    "cheerio": "1.2.0",
+    "undici": "8.13.1"
   }
 }

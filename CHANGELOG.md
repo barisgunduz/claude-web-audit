@@ -13,3 +13,4 @@
 - Refuse requests to private addresses, stay on the given domain when it redirects elsewhere, match robots.txt patterns in linear time and stop SPF lookups at the limit.
 - Judge IPv6 addresses by their bytes and refuse public names that resolve to private addresses.
 - Read sitemaps that start with a stylesheet instruction, as sitemap plugins write them.
+- Check the address of every connection inside the DNS lookup of the socket, which stops DNS rebinding. Add undici as a dependency for this.

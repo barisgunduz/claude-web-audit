@@ -9,13 +9,14 @@ import type {
 } from '../model/crawl.js';
 import { checkExternalLinks, collectExternalLinks, EXTERNAL_LINK_CAP } from './external.js';
 import { detectCanonicalHost } from './hosts.js';
-import { HttpClient } from './http.js';
+import { createTransport } from './guarded-fetch.js';
+import { HttpClient, type FetchFunction } from './http.js';
 import { extractLinks } from './links.js';
 import { groupsFor, isAllowed, parseRobots } from './robots.js';
 import { readSitemaps } from './sitemap.js';
 import { probeTls, type TlsProbe } from './tls.js';
 import { traceUrl } from './trace.js';
-import { isPrivateHost, lookupAll } from './address.js';
+import { isPrivateHost } from './address.js';
 import { pathAndQuery, parseDomainInput, resolveUrl, toCanonicalOrigin } from './url.js';
 
 export const ROBOTS_TOKEN = 'claude-web-audit';
@@ -29,7 +30,7 @@ export interface CrawlOptions {
   concurrency: number;
   version: string;
   signal?: AbortSignal;
-  fetchImpl?: typeof fetch;
+  fetchImpl?: FetchFunction;
   tlsProbe?: TlsProbe;
   timeoutMs?: number;
   externalCap?: number;
@@ -107,25 +108,39 @@ function assignInbound(pages: PageRecord[], origin: string): void {
 
 /** Crawls one site. A failing page never aborts the crawl, and a stop returns what was found. */
 export async function crawl(options: CrawlOptions): Promise<CrawlResult> {
-  const started = Date.now();
-  const log = options.log ?? (() => undefined);
-  const userAgent = buildUserAgent(options.version);
-  const timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS;
-  const shouldStop = (): boolean => options.signal?.aborted === true;
   const inputHost = parseDomainInput(options.input);
+  // Without an injected fetch, real requests go through a transport that refuses private addresses.
+  const transport = options.fetchImpl
+    ? undefined
+    : createTransport({ allowPrivate: isPrivateHost(inputHost) });
+  const fetchImpl = options.fetchImpl ?? transport?.fetch;
   const http = new HttpClient({
     allowPrivateHosts: isPrivateHost(inputHost),
-    // A custom fetch (used in tests) does its own routing, so names are only looked up for real requests.
-    ...(options.fetchImpl === undefined && { resolveHost: lookupAll }),
-    userAgent,
-    timeoutMs,
+    userAgent: buildUserAgent(options.version),
+    timeoutMs: options.timeoutMs ?? REQUEST_TIMEOUT_MS,
     maxBodyBytes: MAX_BODY_BYTES,
     delayMs: options.delayMs,
-    ...(options.fetchImpl && { fetchImpl: options.fetchImpl }),
+    ...(fetchImpl && { fetchImpl }),
     ...(options.sleep && { sleep: options.sleep }),
     ...(options.now && { now: options.now }),
     ...(options.signal && { signal: options.signal }),
   });
+  try {
+    return await crawlSite(options, http, inputHost);
+  } finally {
+    await transport?.close();
+  }
+}
+
+async function crawlSite(
+  options: CrawlOptions,
+  http: HttpClient,
+  inputHost: string,
+): Promise<CrawlResult> {
+  const started = Date.now();
+  const log = options.log ?? (() => undefined);
+  const userAgent = buildUserAgent(options.version);
+  const shouldStop = (): boolean => options.signal?.aborted === true;
   const errors: string[] = [];
 
   log(`Checking host variants for ${inputHost}`);
