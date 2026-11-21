@@ -1,0 +1,35 @@
+{
+  "note": "Lighthouse audits that become findings. An audit that scored below 0.9 becomes important when its score is below 0.5 and an improvement otherwise. The audits for text compression and long cache lifetimes are skipped on purpose, because the direct header checks own those topics.",
+  "audits": [
+    { "id": "render-blocking-insight", "code": "SPD-020" },
+    { "id": "unused-css-rules", "code": "SPD-021" },
+    { "id": "unused-javascript", "code": "SPD-022" },
+    { "id": "unminified-css", "code": "SPD-023" },
+    { "id": "unminified-javascript", "code": "SPD-024" },
+    { "id": "image-delivery-insight", "code": "SPD-025" },
+    { "id": "lcp-discovery-insight", "code": "SPD-026" },
+    { "id": "cls-culprits-insight", "code": "SPD-027" },
+    { "id": "layout-shifts", "code": "SPD-027" },
+    { "id": "long-tasks", "code": "SPD-028", "onlyWhenPoor": "tbt" },
+    { "id": "third-parties-insight", "code": "SPD-029" },
+    { "id": "dom-size-insight", "code": "SPD-030" },
+    { "id": "legacy-javascript-insight", "code": "SPD-031" },
+    { "id": "duplicated-javascript-insight", "code": "SPD-032" },
+    { "id": "font-display-insight", "code": "SPD-033" },
+    { "id": "modern-http-insight", "code": "SPD-034" },
+    { "id": "network-dependency-tree-insight", "code": "SPD-035" },
+    { "id": "bootup-time", "code": "SPD-036" },
+    { "id": "mainthread-work-breakdown", "code": "SPD-037" },
+    { "id": "total-byte-weight", "code": "SPD-040" }
+  ],
+  "skipped": [
+    {
+      "id": "cache-insight",
+      "reason": "Replaces uses-long-cache-ttl. The direct caching check owns this topic."
+    },
+    {
+      "id": "document-latency-insight",
+      "reason": "Replaces uses-text-compression, redirects and server-response-time. Only its redirect and server response answers are used (SPD-038, SPD-039). Compression belongs to the direct compression check."
+    }
+  ]
+}

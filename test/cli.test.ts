@@ -30,6 +30,11 @@ function capture(): { io: Io; out: () => string; err: () => string } {
 }
 
 const NO_ENV: NodeJS.ProcessEnv = {};
+const FAKE_DOCTOR = {
+  fetchImpl: () => Promise.resolve({ status: 200 }),
+  findChrome: () => Promise.resolve({ source: 'none' as const }),
+  nodeVersion: '26.0.0',
+};
 let site: TestSite;
 let folder: string;
 
@@ -49,6 +54,9 @@ function deps(overrides: Partial<AuditDeps> = {}): AuditDeps {
     dns: fakeDns({}),
     now: () => NOW,
     cwd: folder,
+    // No Chrome and no key: nothing in a test may start a browser or call PageSpeed Insights.
+    chrome: { source: 'none' },
+    doctor: FAKE_DOCTOR,
     ...overrides,
   };
 }
@@ -70,7 +78,6 @@ describe('run', () => {
 
   it.each([
     [['init']],
-    [['doctor']],
     [['fix']],
     [['verify', 'T-014']],
     [['recheck']],
@@ -129,7 +136,7 @@ describe('audit command', () => {
     expect(lines[0]).toMatch(/^Audit of example\.test: \d+ pages crawled/);
     expect(lines.at(-1)).toBe(`Output: ${file()}`);
     expect(output.out()).toMatch(/Findings: \d+ critical, \d+ important, \d+ improvement/);
-    expect(output.out()).toContain('Not measured: speed, a11y');
+    expect(output.out()).toContain('Not measured: a11y. Partly measured: speed');
 
     const audit = await read(file());
     expect(audit).toMatchObject({
@@ -248,6 +255,25 @@ describe('audit command', () => {
       await run(['example.test'], output.io, NO_ENV, deps({ fetchImpl, timeoutMs: 200 })),
     ).toBe(1);
     expect(output.err()).toContain('Could not reach example.test');
+  });
+});
+
+describe('doctor command', () => {
+  it('prints one line per check and exits 0 when the chosen engine can run', async () => {
+    const output = capture();
+    const code = await run(['doctor', '--engine', 'psi'], output.io, NO_ENV, deps());
+    expect(code).toBe(0);
+    expect(output.out()).toContain('cwa doctor (engine: psi)');
+    expect(output.out()).toContain('Ready:');
+    expect(output.err()).toBe('');
+  });
+
+  it('exits 1 and says what to fix when Chrome is missing for the local engine', async () => {
+    const output = capture();
+    const code = await run(['doctor', '--engine', 'lighthouse'], output.io, NO_ENV, deps());
+    expect(code).toBe(1);
+    expect(output.out()).toContain('FAIL  Chrome: not found');
+    expect(output.out()).toContain('Fix: Install Google Chrome');
   });
 });
 

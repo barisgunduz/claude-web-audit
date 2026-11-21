@@ -9,6 +9,9 @@
   "delay": 250,
   "concurrency": 4,
   "thinContentWords": 300,
+  "speedPages": 3,
+  "a11yPages": 10,
+  "chromePath": "/usr/bin/google-chrome",
   "email": {
     "dkimSelectors": ["google", "selector1"]
   },

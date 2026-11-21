@@ -18,7 +18,9 @@ export interface Finding {
 
 export type ModuleStatus = 'measured' | 'partial' | 'not_measured';
 
-export type FactValue = string | number | boolean | readonly string[] | readonly number[] | null;
+/** Any JSON value. Facts hold raw numbers and small structures for the report. */
+export type FactValue =
+  string | number | boolean | null | readonly FactValue[] | { readonly [key: string]: FactValue };
 export type Facts = Readonly<Record<string, FactValue>>;
 
 export interface ModuleResult {

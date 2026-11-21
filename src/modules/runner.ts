@@ -38,6 +38,7 @@ export async function runModule(
       facts = { ...facts, ...result.facts };
       if (result.notMeasured === undefined) measured++;
       else reasons.push(`${check.id}: ${result.notMeasured}`);
+      if (result.partial !== undefined) reasons.push(`${check.id}: ${result.partial}`);
     } catch (error) {
       if (error instanceof UnknownCodeError) throw error;
       reasons.push(`${check.id}: ${error instanceof Error ? error.message : 'failed'}`);

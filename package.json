@@ -15,7 +15,7 @@
   "homepage": "https://github.com/barisgunduz/claude-web-audit#readme",
   "type": "module",
   "engines": {
-    "node": ">=26"
+    "node": ">=22.19"
   },
   "bin": {
     "cwa": "dist/cli/index.js"
@@ -38,7 +38,11 @@
     "vitest": "5.1.1"
   },
   "dependencies": {
+    "axe-core": "4.14.0",
     "cheerio": "1.2.0",
+    "chrome-launcher": "1.2.3",
+    "lighthouse": "13.6.0",
+    "puppeteer-core": "25.18.1",
     "undici": "8.13.1"
   }
 }

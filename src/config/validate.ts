@@ -1,5 +1,6 @@
 import { ENGINES, STRATEGIES } from '../cli/params.js';
 import { isModuleName, MODULE_NAMES } from '../modules/names.js';
+import { MAX_A11Y_PAGES, MAX_SPEED_PAGES } from './defaults.js';
 import type { CwaConfig } from './types.js';
 
 export class ConfigError extends Error {
@@ -23,6 +24,9 @@ const TOP_LEVEL_KEYS = [
   'delay',
   'concurrency',
   'thinContentWords',
+  'speedPages',
+  'a11yPages',
+  'chromePath',
   'email',
   'weights',
   'modules',
@@ -89,12 +93,21 @@ export function validateConfig(input: unknown): CwaConfig {
     issues.push('"delay" must be a whole number from 0 to 60000.');
   }
 
-  const { concurrency, thinContentWords, email } = input;
+  const { concurrency, thinContentWords, speedPages, a11yPages, chromePath, email } = input;
   if (concurrency !== undefined && !isWholeNumber(concurrency, 1, 8)) {
     issues.push('"concurrency" must be a whole number from 1 to 8.');
   }
   if (thinContentWords !== undefined && !isWholeNumber(thinContentWords, 1, 100_000)) {
     issues.push('"thinContentWords" must be a whole number from 1 to 100000.');
+  }
+  if (speedPages !== undefined && !isWholeNumber(speedPages, 1, MAX_SPEED_PAGES)) {
+    issues.push(`"speedPages" must be a whole number from 1 to ${MAX_SPEED_PAGES}.`);
+  }
+  if (a11yPages !== undefined && !isWholeNumber(a11yPages, 1, MAX_A11Y_PAGES)) {
+    issues.push(`"a11yPages" must be a whole number from 1 to ${MAX_A11Y_PAGES}.`);
+  }
+  if (chromePath !== undefined && (typeof chromePath !== 'string' || chromePath.trim() === '')) {
+    issues.push('"chromePath" must be a non-empty string.');
   }
   if (email !== undefined) {
     if (!isObject(email)) {

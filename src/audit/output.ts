@@ -6,6 +6,7 @@ import { renderFinding } from '../i18n/messages.js';
 import type { CrawlResult } from '../model/crawl.js';
 import type { Finding, ModuleResult, Severity } from '../model/finding.js';
 import { SEVERITIES } from '../model/finding.js';
+import { describeMethod } from '../engines/measure.js';
 import type { AuditRun } from './run.js';
 
 export const SCHEMA_VERSION = '0-interim';
@@ -69,6 +70,22 @@ function describeModule(
   };
 }
 
+/** How the numbers were measured. The report prints this later. */
+function buildMethod(run: AuditRun): Record<string, unknown> {
+  const a11y = run.modules.find((result) => result.module === 'a11y');
+  return {
+    speed: run.lab
+      ? {
+          status: run.lab.status,
+          reason: run.lab.reason ?? null,
+          statement: describeMethod(run.lab.method),
+          ...run.lab.method,
+        }
+      : null,
+    axeVersion: a11y?.facts.axeVersion ?? null,
+  };
+}
+
 export function buildAuditJson(
   run: AuditRun,
   settings: Settings,
@@ -86,6 +103,7 @@ export function buildAuditJson(
       concurrency: settings.concurrency,
       modules: settings.modules,
     },
+    method: buildMethod(run),
     crawl: summarizeCrawl(run.crawl),
     modules: run.modules.map((result) => describeModule(result, message)),
   };
@@ -118,6 +136,17 @@ export async function writeAuditJson(
   return file;
 }
 
+function engineLine(run: AuditRun): string[] {
+  const method = run.lab?.method;
+  if (!method || method.enginesUsed.length === 0) return [];
+  const versions = method.lighthouseVersions.join(', ');
+  const fallback =
+    method.fallbacks > 0 ? `, ${method.fallbacks} fell back from PSI to local Lighthouse` : '';
+  return [
+    `Speed engine: ${method.enginesUsed.join(' and ')} (Lighthouse ${versions}), ${method.runsPerPage} run(s), median${fallback}`,
+  ];
+}
+
 const SEVERITY_RANK: Record<Severity, number> = { critical: 0, important: 1, improvement: 2 };
 
 /** Terminal summary, at most 10 lines. */
@@ -147,6 +176,7 @@ export function buildSummary(run: AuditRun, file: string): string[] {
     `Audit of ${run.crawl.host.canonicalHost}: ${run.crawl.pages.length} pages crawled in ${seconds}s${run.crawl.limits.pagesCapReached ? ' (page limit reached)' : ''}`,
     `Findings: ${counts.critical ?? 0} critical, ${counts.important ?? 0} important, ${counts.improvement ?? 0} improvement`,
     `Not measured: ${notMeasured.length > 0 ? notMeasured.join(', ') : 'none'}${partial.length > 0 ? `. Partly measured: ${partial.join(', ')}` : ''}`,
+    ...engineLine(run),
     ...top.map(
       (finding) => `  ${finding.code} ${finding.severity}: ${renderFinding(finding, translate)}`,
     ),

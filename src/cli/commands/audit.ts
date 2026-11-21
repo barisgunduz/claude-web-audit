@@ -5,7 +5,13 @@ import { resolveSettings } from '../../config/resolve.js';
 import { DEFAULTS } from '../params.js';
 import { EXIT_OK, type CommandContext } from './context.js';
 
-export async function runAudit({ parsed, io, version, deps }: CommandContext): Promise<number> {
+export async function runAudit({
+  parsed,
+  io,
+  version,
+  deps,
+  env,
+}: CommandContext): Promise<number> {
   const explicitConfig = parsed.options.config;
   const config = await loadConfigFile(
     explicitConfig ?? DEFAULTS.config,
@@ -30,7 +36,10 @@ export async function runAudit({ parsed, io, version, deps }: CommandContext): P
     const run = await runAuditPipeline({
       settings,
       version,
-      deps: { signal: controller.signal, ...deps },
+      deps: { signal: controller.signal, env, ...deps },
+      notice: (message) => {
+        io.stderr(`${message}\n`);
+      },
       ...(log && { log }),
     });
     const now = deps.now?.() ?? new Date();

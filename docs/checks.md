@@ -19,7 +19,10 @@ Some topics could be reported twice. Each one has one owner, so the same issue i
 | Duplicate titles and descriptions | content (CNT-001, CNT-002) | The seo module reports missing, short and long titles and descriptions only. |
 | Pages without inbound links | links (LINK-009) | Pages in a sitemap with no inbound link. content (CNT-007) reports pages with one inbound link, and pages with none that are not in a sitemap. |
 | HSTS | headers (HDR-001, HDR-002) | The ssl module does not check it. |
-| Compression and cache headers | speed (step 4) | Not checked in the headers module. |
+| Compression and cache headers | speed (SPD-050 to SPD-054) | Not checked in the headers module. The Lighthouse audits for text compression and long cache lifetimes are skipped. |
+| Redirect chains | links (LINK-005, LINK-006) | SPD-038 only says that the main document redirects in a Lighthouse run. |
+| Image formats and page weight | speed (SPD-025, SPD-040) | Read from the Lighthouse result. The links module does not check them. |
+| Missing image alt text and size attributes | seo (SEO-027, SEO-028) | The a11y module reports the axe rules, which can include the same images. |
 | Structured data validity | seo (SEO-021 to SEO-023, SEO-047) | The ai module only reads Organization data for the entity check. |
 
 ## links
@@ -177,6 +180,57 @@ Some topics could be reported twice. Each one has one owner, so the same issue i
 | AI-009 | improvement | No Organization or LocalBusiness data was found in the JSON-LD of the home page. | Add Organization JSON-LD. |
 | AI-010 | improvement | The organization data misses properties. | Add name, url, logo, address and sameAs. |
 
-## speed and a11y
+## speed
 
-These two modules return "not measured" with the reason "implemented in step 4". They have no codes yet.
+Lighthouse results come from PageSpeed Insights or from local Lighthouse, see [speed-and-engines.md](speed-and-engines.md). Findings are grouped per code, and the evidence lines name the page and the strategy (mobile or desktop). The header checks (SPD-050 to SPD-054) need no browser.
+
+Metric limits are in `src/modules/speed/metric-thresholds.json` with the source of each value. A value at or below the good limit is good, above the poor limit is poor, and in between needs improvement. The limits are the Lighthouse control points, which differ for mobile and desktop.
+
+Lighthouse audits that become findings are listed in `src/modules/speed/audit-findings.json`. An audit that scored below 0.9 becomes important when its score is below 0.5, and an improvement otherwise. Lighthouse 13 replaced several older audits with "insight" audits. Two of them are not turned into findings, because the direct header checks own their topics:
+
+- `cache-insight` (long cache lifetimes), owned by SPD-052 to SPD-054.
+- The compression answer of `document-latency-insight` (text compression), owned by SPD-050 and SPD-051. Its redirect and server response answers are used (SPD-038 and SPD-039).
+
+| Code | Severity | What it means | How to fix it |
+| --- | --- | --- | --- |
+| SPD-001 | critical (mobile below 50), important (desktop below 50), improvement (50 to 89) | {count} measurements have a Lighthouse performance score below 90 (lowest {lowest}). | Work through the findings below. Mobile below 50 is critical, desktop below 50 is important, 50 to 89 is an improvement. |
+| SPD-002 | important when poor, improvement when it needs improvement | {metric} is poor on {poor} and needs improvement on {needsImprovement} measurements. | Check the LCP element and its request in the evidence. Values are rated with the Lighthouse control points of the form factor. |
+| SPD-003 | important when poor, improvement when it needs improvement | {metric} is poor on {poor} and needs improvement on {needsImprovement} measurements. | Reduce render-blocking resources and server response time. |
+| SPD-004 | important when poor, improvement when it needs improvement | {metric} is poor on {poor} and needs improvement on {needsImprovement} measurements. | Split long JavaScript tasks and remove unused scripts. |
+| SPD-005 | important when poor, improvement when it needs improvement | {metric} is poor on {poor} and needs improvement on {needsImprovement} measurements. | Set width and height on images and embeds, and reserve space for late content. |
+| SPD-006 | important when poor, improvement when it needs improvement | {metric} is poor on {poor} and needs improvement on {needsImprovement} measurements. | Make the visible part of the page render sooner. |
+| SPD-020 | important when the audit score is below 0.5, else improvement | {count} measurements report render-blocking resources (estimated savings up to {savingsMs} ms). | Defer or inline the render-blocking CSS and JavaScript. |
+| SPD-021 | important when the audit score is below 0.5, else improvement | {count} measurements report unused CSS (estimated savings up to {savingsKiB} KiB). | Remove CSS that the page does not use, or split it by page. |
+| SPD-022 | important when the audit score is below 0.5, else improvement | {count} measurements report unused JavaScript (estimated savings up to {savingsKiB} KiB). | Remove or lazy load JavaScript that the page does not use. |
+| SPD-023 | important when the audit score is below 0.5, else improvement | {count} measurements report CSS that is not minified (estimated savings up to {savingsKiB} KiB). | Minify the CSS in the build. |
+| SPD-024 | important when the audit score is below 0.5, else improvement | {count} measurements report JavaScript that is not minified (estimated savings up to {savingsKiB} KiB). | Minify the JavaScript in the build. |
+| SPD-025 | important when the audit score is below 0.5, else improvement | Image delivery can be improved on {count} measurements (formats, sizes or compression), estimated savings up to {savingsKiB} KiB. | Serve modern formats such as WebP or AVIF in the size that is shown. Image formats are reported here, from the Lighthouse result. |
+| SPD-026 | important when the audit score is below 0.5, else improvement | The request for the Largest Contentful Paint element is found late or not prioritized on {count} measurements. | Put the LCP image in the HTML, and use fetchpriority="high" instead of loading it from script. |
+| SPD-027 | important when the audit score is below 0.5, else improvement | Layout shifts were found on {count} measurements. | Reserve space for images, embeds and late content. |
+| SPD-028 | improvement | Long main-thread tasks were found on {count} measurements while Total Blocking Time is not good. | Split the long tasks. Only reported when Total Blocking Time is rated needs improvement or poor. |
+| SPD-029 | important when the audit score is below 0.5, else improvement | Third-party code slows down {count} measurements. | Remove, defer or lazy load third-party scripts. |
+| SPD-030 | important when the audit score is below 0.5, else improvement | The DOM is large on {count} measurements. | Reduce the number of elements and the depth of the DOM. |
+| SPD-031 | important when the audit score is below 0.5, else improvement | Legacy JavaScript (code for old browsers) is served on {count} measurements, estimated savings up to {savingsKiB} KiB. | Stop transpiling and polyfilling for features that modern browsers have. |
+| SPD-032 | important when the audit score is below 0.5, else improvement | Duplicated JavaScript modules were found on {count} measurements, estimated savings up to {savingsKiB} KiB. | Remove duplicate copies of the same module from the bundles. |
+| SPD-033 | important when the audit score is below 0.5, else improvement | Web fonts delay text rendering on {count} measurements. | Use font-display: swap, or preload the font. |
+| SPD-034 | important when the audit score is below 0.5, else improvement | Requests use an old HTTP version on {count} measurements. | Serve the site over HTTP/2 or HTTP/3. |
+| SPD-035 | important when the audit score is below 0.5, else improvement | Long chains of dependent requests delay rendering on {count} measurements. | Shorten the chains with preload or by inlining critical files. |
+| SPD-036 | important when the audit score is below 0.5, else improvement | JavaScript execution time is high on {count} measurements. | Reduce and split the JavaScript that runs at load. |
+| SPD-037 | important when the audit score is below 0.5, else improvement | Main-thread work is high on {count} measurements. | Reduce script, style and layout work during load. |
+| SPD-038 | improvement | Redirects slow down the main document on {count} measurements. | Link to the final address. The redirect check in the links module reports the chains. |
+| SPD-039 | important | The server answers slowly on {count} measurements. | Improve server response time with caching and a faster backend. |
+| SPD-040 | important when the audit score is below 0.5, else improvement | The page is heavy on {count} measurements (largest {largestKiB} KiB). | Reduce the transfer size of images, scripts and fonts. Page weight comes from the Lighthouse result. |
+| SPD-050 | important | The HTML of {count} sampled pages is not compressed (gzip or Brotli). | Enable gzip or Brotli for HTML. Documents under 1 KiB are skipped. Compression is checked from response headers, so the Lighthouse compression audit is skipped. |
+| SPD-051 | improvement | {count} text assets are not compressed (gzip or Brotli). | Enable gzip or Brotli for CSS, JavaScript, SVG, JSON and fonts in TTF or OTF. Images and WOFF files are already compressed and are skipped. |
+| SPD-052 | improvement | {count} static assets have no caching headers. | Send Cache-Control for static files. |
+| SPD-053 | improvement | {count} versioned static assets are cached for less than {days} days. | Files with a hash or version in their name can be cached for a year with Cache-Control: immutable. The 30 day limit is the one Lighthouse uses. |
+| SPD-054 | improvement | {count} static assets cannot be cached (no-store, or no-cache without a validator). | Allow caching, or at least send an ETag so that browsers can revalidate. |
+
+## a11y
+
+axe-core runs in Chrome, page by page. There is one finding per axe rule per audit. The axe impact decides the severity: critical and serious become important, moderate and minor become improvement. This module never emits a critical finding. The Lighthouse accessibility score is stored as a fact, and is not a finding.
+
+| Code | Severity | What it means | How to fix it |
+| --- | --- | --- | --- |
+| A11Y-001 | important (axe impact critical or serious) | Rule {ruleId} (impact {impact}): {help} ({elements} elements on {pages} pages). | Follow the help link in the finding data. Evidence lists the pages and up to 10 selectors. |
+| A11Y-002 | improvement (axe impact moderate, minor or none) | Rule {ruleId} (impact {impact}): {help} ({elements} elements on {pages} pages). | Follow the help link in the finding data. Evidence lists the pages and up to 10 selectors. |

@@ -1,0 +1,63 @@
+{
+  "note": "A value at or below good is good. Above good and at or below poor needs improvement. Above poor is poor. The good and poor values are the Lighthouse control points p10 and median of each metric audit, which differ by form factor.",
+  "performanceScore": {
+    "critical": 50,
+    "good": 90,
+    "sources": [
+      "https://github.com/GoogleChrome/lighthouse/blob/main/docs/scoring.md",
+      "https://github.com/GoogleChrome/lighthouse/blob/main/shared/util.js (RATINGS: pass from 0.9, average from 0.5)"
+    ],
+    "criticalNote": "A mobile performance score below 50 is critical. This limit is a rule of this tool and equals the Lighthouse average band start."
+  },
+  "metrics": {
+    "lcp": {
+      "label": "Largest Contentful Paint",
+      "unit": "millisecond",
+      "mobile": { "good": 2500, "poor": 4000 },
+      "desktop": { "good": 1200, "poor": 2400 },
+      "sources": [
+        "https://github.com/GoogleChrome/lighthouse/blob/main/core/audits/metrics/largest-contentful-paint.js",
+        "https://web.dev/articles/lcp"
+      ]
+    },
+    "fcp": {
+      "label": "First Contentful Paint",
+      "unit": "millisecond",
+      "mobile": { "good": 1800, "poor": 3000 },
+      "desktop": { "good": 934, "poor": 1600 },
+      "sources": [
+        "https://github.com/GoogleChrome/lighthouse/blob/main/core/audits/metrics/first-contentful-paint.js",
+        "https://web.dev/articles/fcp"
+      ]
+    },
+    "tbt": {
+      "label": "Total Blocking Time",
+      "unit": "millisecond",
+      "mobile": { "good": 200, "poor": 600 },
+      "desktop": { "good": 150, "poor": 350 },
+      "sources": [
+        "https://github.com/GoogleChrome/lighthouse/blob/main/core/audits/metrics/total-blocking-time.js",
+        "https://web.dev/articles/tbt"
+      ]
+    },
+    "cls": {
+      "label": "Cumulative Layout Shift",
+      "unit": "unitless",
+      "mobile": { "good": 0.1, "poor": 0.25 },
+      "desktop": { "good": 0.1, "poor": 0.25 },
+      "sources": [
+        "https://github.com/GoogleChrome/lighthouse/blob/main/core/audits/metrics/cumulative-layout-shift.js",
+        "https://web.dev/articles/cls"
+      ]
+    },
+    "speedIndex": {
+      "label": "Speed Index",
+      "unit": "millisecond",
+      "mobile": { "good": 3387, "poor": 5800 },
+      "desktop": { "good": 1311, "poor": 2300 },
+      "sources": [
+        "https://github.com/GoogleChrome/lighthouse/blob/main/core/audits/metrics/speed-index.js"
+      ]
+    }
+  }
+}

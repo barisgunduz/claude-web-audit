@@ -24,6 +24,9 @@ export interface CwaConfig {
   delay?: number;
   concurrency?: number;
   thinContentWords?: number;
+  speedPages?: number;
+  a11yPages?: number;
+  chromePath?: string;
   email?: EmailConfig;
   weights?: Partial<Record<ModuleName, number>>;
   modules?: ModuleName[];
@@ -42,6 +45,9 @@ export interface Settings {
   delay: number;
   concurrency: number;
   thinContentWords: number;
+  speedPages: number;
+  a11yPages: number;
+  chromePath: string | undefined;
   dkimSelectors: string[];
   weights: Record<ModuleName, number>;
   modules: ModuleName[];

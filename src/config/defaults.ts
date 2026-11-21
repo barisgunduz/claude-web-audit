@@ -15,3 +15,7 @@ export const DEFAULT_WEIGHTS: Readonly<Record<ModuleName, number>> = {
 
 export const DEFAULT_CONCURRENCY = 4;
 export const DEFAULT_THIN_CONTENT_WORDS = 300;
+export const DEFAULT_SPEED_PAGES = 3;
+export const MAX_SPEED_PAGES = 10;
+export const DEFAULT_A11Y_PAGES = 10;
+export const MAX_A11Y_PAGES = 50;

@@ -26,6 +26,17 @@ const PLACEHOLDERS = new Set([
   'host',
   'protocol',
   'tags',
+  'metric',
+  'poor',
+  'needsImprovement',
+  'savingsMs',
+  'savingsKiB',
+  'largestKiB',
+  'lowest',
+  'ruleId',
+  'impact',
+  'help',
+  'elements',
 ]);
 
 describe('check registry', () => {
@@ -51,6 +62,8 @@ describe('check registry', () => {
       content: 'CNT',
       email: 'EML',
       ai: 'AI',
+      speed: 'SPD',
+      a11y: 'A11Y',
     };
     for (const check of CHECKS) {
       for (const code of check.codes)
@@ -68,7 +81,7 @@ describe('check registry', () => {
       .filter((key) => key.startsWith('finding.'))
       .map((key) => key.slice('finding.'.length));
     expect(messageCodes.sort()).toEqual([...codes].sort());
-    const docCodes = [...docs.matchAll(/^\| ([A-Z]+-\d{3}) \|/gm)].map((match) => match[1]);
+    const docCodes = [...docs.matchAll(/^\| ([A-Z0-9]+-\d{3}) \|/gm)].map((match) => match[1]);
     expect(docCodes.sort()).toEqual([...codes].sort());
   });
 
