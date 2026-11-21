@@ -68,12 +68,11 @@ export class LocalLighthouseEngine implements LabEngine {
     }, timeoutMs);
     try {
       const lhr = await run(url, chrome.port, strategy);
-      if (typeof lhr === 'object' && lhr !== null && 'runtimeError' in lhr) {
+      // The key can be present with the value undefined, which means "no error".
+      if (typeof lhr === 'object' && lhr !== null && 'runtimeError' in lhr && lhr.runtimeError) {
         const runtime = lhr.runtimeError;
         const code =
-          typeof runtime === 'object' && runtime !== null && 'code' in runtime
-            ? String(runtime.code)
-            : 'unknown';
+          typeof runtime === 'object' && 'code' in runtime ? String(runtime.code) : 'unknown';
         throw new EngineError('runtime', `Lighthouse could not measure the page (${code}).`);
       }
       return normalizeLighthouseResult(lhr, { engine: 'lighthouse', url });

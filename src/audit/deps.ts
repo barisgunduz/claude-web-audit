@@ -22,6 +22,8 @@ export interface AuditDeps {
   env?: NodeJS.ProcessEnv;
   /** Replaces the PageSpeed Insights transport. */
   psiFetch?: PsiFetch;
+  /** Time limit of one PageSpeed Insights request, for tests. */
+  psiTimeoutMs?: number;
   /** Replaces the Lighthouse engines. */
   engines?: { psi?: LabEngine; local?: LabEngine };
   /** Replaces the axe runner. */

@@ -70,6 +70,7 @@ async function prepareBrowserWork(
       deps.engines?.psi ??
       new PsiEngine({
         apiKey,
+        ...(deps.psiTimeoutMs !== undefined && { timeoutMs: deps.psiTimeoutMs }),
         ...(deps.psiFetch && { fetchImpl: deps.psiFetch }),
         ...(deps.sleep && { sleep: deps.sleep }),
       });

@@ -46,7 +46,7 @@ export function parseCachePolicy(
 ): CachePolicy {
   const control = (headers['cache-control'] ?? '').toLowerCase();
   const directives = control.split(',').map((part) => part.trim());
-  const maxAge = /(?:^|,)\s*(?:s-)?max-age\s*=\s*(\d+)/.exec(control)?.[1];
+  const maxAge = /(?:^|,)\s*(?:max-age|s-maxage)\s*=\s*(\d+)/.exec(control)?.[1];
   const expires = headers.expires;
   let ttl: number | undefined = maxAge === undefined ? undefined : Number(maxAge);
   if (ttl === undefined && expires !== undefined) {
@@ -76,7 +76,7 @@ export function isVersionedUrl(url: string): boolean {
   );
 }
 
-/** Same-site static assets that the pages refer to, in page order, without repeats. */
+/** Same-site static assets that the pages refer to: scripts, then stylesheets, preloads and images, without repeats. */
 export function extractAssetUrls(
   pages: readonly PageRecord[],
   canonicalHost: string,

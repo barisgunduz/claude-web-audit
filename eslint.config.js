@@ -17,4 +17,9 @@ export default tseslint.config(
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
     },
   },
+  {
+    // Vitest's asymmetric matchers, such as expect.stringContaining, are typed as any.
+    files: ['test/**/*.ts'],
+    rules: { '@typescript-eslint/no-unsafe-assignment': 'off' },
+  },
 );

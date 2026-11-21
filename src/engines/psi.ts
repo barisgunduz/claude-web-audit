@@ -164,12 +164,15 @@ export class PsiEngine implements LabEngine {
       );
     }
     const result = body.lighthouseResult;
-    if (typeof result === 'object' && result !== null && 'runtimeError' in result) {
+    if (
+      typeof result === 'object' &&
+      result !== null &&
+      'runtimeError' in result &&
+      result.runtimeError
+    ) {
       const runtime = result.runtimeError;
       const code =
-        typeof runtime === 'object' && runtime !== null && 'code' in runtime
-          ? String(runtime.code)
-          : 'unknown';
+        typeof runtime === 'object' && 'code' in runtime ? String(runtime.code) : 'unknown';
       throw new EngineError(
         'runtime',
         `Lighthouse could not measure the page (${this.#safe(code)}).`,

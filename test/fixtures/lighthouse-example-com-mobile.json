@@ -1,0 +1,430 @@
+{
+  "kind": "pagespeedonline#result",
+  "id": "https://example.com/",
+  "loadingExperience": {
+    "id": "https://example.com/",
+    "metrics": {
+      "LARGEST_CONTENTFUL_PAINT_MS": {
+        "percentile": 1300,
+        "category": "FAST"
+      },
+      "CUMULATIVE_LAYOUT_SHIFT_SCORE": {
+        "percentile": 2,
+        "category": "FAST"
+      }
+    },
+    "overall_category": "FAST"
+  },
+  "lighthouseResult": {
+    "lighthouseVersion": "13.6.0",
+    "requestedUrl": "https://example.com/",
+    "finalUrl": "https://example.com/",
+    "fetchTime": "2026-11-21T20:36:21.600Z",
+    "configSettings": {
+      "formFactor": "mobile",
+      "throttlingMethod": "simulate",
+      "throttling": {
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "requestLatencyMs": 562.5,
+        "downloadThroughputKbps": 1474.5600000000002,
+        "uploadThroughputKbps": 675,
+        "cpuSlowdownMultiplier": 4
+      }
+    },
+    "categories": {
+      "performance": {
+        "id": "performance",
+        "score": 0.99
+      },
+      "accessibility": {
+        "id": "accessibility",
+        "score": 0.96
+      },
+      "best-practices": {
+        "id": "best-practices",
+        "score": 1
+      },
+      "seo": {
+        "id": "seo",
+        "score": 0.8
+      }
+    },
+    "audits": {
+      "first-contentful-paint": {
+        "id": "first-contentful-paint",
+        "title": "First Contentful Paint",
+        "score": 1,
+        "scoreDisplayMode": "numeric",
+        "numericValue": 769.6385,
+        "numericUnit": "millisecond",
+        "displayValue": "0.8 s"
+      },
+      "largest-contentful-paint": {
+        "id": "largest-contentful-paint",
+        "title": "Largest Contentful Paint",
+        "score": 1,
+        "scoreDisplayMode": "numeric",
+        "numericValue": 894.6385,
+        "numericUnit": "millisecond",
+        "displayValue": "0.9 s"
+      },
+      "total-blocking-time": {
+        "id": "total-blocking-time",
+        "title": "Total Blocking Time",
+        "score": 0.98,
+        "scoreDisplayMode": "numeric",
+        "numericValue": 94,
+        "numericUnit": "millisecond",
+        "displayValue": "90 ms"
+      },
+      "cumulative-layout-shift": {
+        "id": "cumulative-layout-shift",
+        "title": "Cumulative Layout Shift",
+        "score": 1,
+        "scoreDisplayMode": "numeric",
+        "numericValue": 0,
+        "numericUnit": "unitless",
+        "displayValue": "0",
+        "details": {
+          "type": "debugdata",
+          "items": [
+            {
+              "cumulativeLayoutShiftMainFrame": 0,
+              "newEngineResult": {
+                "cumulativeLayoutShift": 0,
+                "cumulativeLayoutShiftMainFrame": 0
+              },
+              "newEngineResultDiffered": false
+            }
+          ]
+        }
+      },
+      "speed-index": {
+        "id": "speed-index",
+        "title": "Speed Index",
+        "score": 1,
+        "scoreDisplayMode": "numeric",
+        "numericValue": 887.0776304705979,
+        "numericUnit": "millisecond",
+        "displayValue": "0.9 s"
+      },
+      "total-byte-weight": {
+        "id": "total-byte-weight",
+        "title": "Avoids enormous network payloads",
+        "score": 1,
+        "scoreDisplayMode": "metricSavings",
+        "numericValue": 2022,
+        "numericUnit": "byte",
+        "displayValue": "Total size was 2 KiB",
+        "details": {
+          "type": "table",
+          "items": [
+            {
+              "url": "https://example.com/s.js",
+              "totalBytes": 1500
+            },
+            {
+              "url": "https://example.com/",
+              "totalBytes": 522
+            }
+          ]
+        }
+      },
+      "lcp-breakdown-insight": {
+        "id": "lcp-breakdown-insight",
+        "title": "LCP breakdown",
+        "score": 1,
+        "scoreDisplayMode": "informative",
+        "metricSavings": {
+          "LCP": 0
+        },
+        "details": {
+          "type": "list",
+          "items": [
+            {
+              "type": "table",
+              "headings": [
+                {
+                  "key": "label",
+                  "valueType": "text",
+                  "label": "Subpart"
+                },
+                {
+                  "key": "duration",
+                  "valueType": "ms",
+                  "label": "Duration"
+                }
+              ],
+              "items": [
+                {
+                  "subpart": "timeToFirstByte",
+                  "label": "Time to first byte",
+                  "duration": 217.341
+                },
+                {
+                  "subpart": "elementRenderDelay",
+                  "label": "Element render delay",
+                  "duration": 191.69
+                }
+              ]
+            },
+            {
+              "type": "node",
+              "lhId": "page-0-P",
+              "path": "1,HTML,1,BODY,6,P",
+              "selector": "body > p",
+              "boundingRect": {
+                "top": 584,
+                "bottom": 696,
+                "left": 32,
+                "right": 380,
+                "width": 348,
+                "height": 112
+              },
+              "snippet": "<p lang=\"ru\">",
+              "nodeLabel": "Данный домен предназначен для использования в примерах документации без необход…"
+            }
+          ]
+        }
+      },
+      "document-latency-insight": {
+        "id": "document-latency-insight",
+        "title": "Document request latency",
+        "score": 1,
+        "scoreDisplayMode": "metricSavings",
+        "numericValue": 0,
+        "numericUnit": "millisecond",
+        "metricSavings": {
+          "FCP": 0,
+          "LCP": 0
+        },
+        "details": {
+          "type": "checklist",
+          "items": {
+            "noRedirects": {
+              "label": "Avoids redirects",
+              "value": true
+            },
+            "serverResponseIsFast": {
+              "label": "Server responds quickly (observed 69 ms)",
+              "value": true
+            },
+            "usesCompression": {
+              "label": "Applies text compression",
+              "value": true
+            }
+          }
+        }
+      },
+      "cache-insight": {
+        "id": "cache-insight",
+        "title": "Use efficient cache lifetimes",
+        "score": 0.5,
+        "scoreDisplayMode": "metricSavings",
+        "numericValue": 1500,
+        "numericUnit": "byte",
+        "displayValue": "Est savings of 1 KiB",
+        "metricSavings": {
+          "FCP": 0,
+          "LCP": 0
+        },
+        "details": {
+          "type": "table",
+          "items": [
+            {
+              "url": "https://example.com/s.js",
+              "cacheLifetimeMs": 0,
+              "totalBytes": 1500,
+              "wastedBytes": 1500
+            }
+          ]
+        }
+      },
+      "render-blocking-insight": {
+        "id": "render-blocking-insight",
+        "title": "Render-blocking requests",
+        "score": 1,
+        "scoreDisplayMode": "metricSavings",
+        "numericValue": 0,
+        "numericUnit": "millisecond",
+        "metricSavings": {
+          "FCP": 0,
+          "LCP": 0
+        },
+        "details": {
+          "type": "table",
+          "items": []
+        }
+      },
+      "network-dependency-tree-insight": {
+        "id": "network-dependency-tree-insight",
+        "title": "Network dependency tree",
+        "score": 0,
+        "scoreDisplayMode": "numeric",
+        "metricSavings": {
+          "LCP": 0
+        },
+        "details": {
+          "type": "list",
+          "items": []
+        }
+      },
+      "landmark-one-main": {
+        "id": "landmark-one-main",
+        "title": "Document does not have a main landmark.",
+        "score": 0,
+        "scoreDisplayMode": "binary",
+        "details": {
+          "type": "table",
+          "items": [
+            {
+              "node": {
+                "type": "node",
+                "lhId": "1-0-HTML",
+                "path": "1,HTML",
+                "selector": "html",
+                "boundingRect": {
+                  "top": 0,
+                  "bottom": 871,
+                  "left": 0,
+                  "right": 412,
+                  "width": 412,
+                  "height": 871
+                },
+                "snippet": "<html lang=\"en\">",
+                "nodeLabel": "html",
+                "explanation": "Fix all of the following:\n  Document does not have a main landmark"
+              }
+            }
+          ]
+        }
+      },
+      "meta-description": {
+        "id": "meta-description",
+        "title": "Document does not have a meta description",
+        "score": 0,
+        "scoreDisplayMode": "binary"
+      },
+      "link-text": {
+        "id": "link-text",
+        "title": "Links do not have descriptive text",
+        "score": 0,
+        "scoreDisplayMode": "binary",
+        "displayValue": "1 link found",
+        "details": {
+          "type": "table",
+          "items": [
+            {
+              "href": "https://iana.org/help/example-domains",
+              "text": "Learn more",
+              "textLang": "en"
+            }
+          ]
+        }
+      },
+      "long-tasks": {
+        "id": "long-tasks",
+        "title": "Avoid long main-thread tasks",
+        "score": 1,
+        "scoreDisplayMode": "informative",
+        "displayValue": "3 long tasks found",
+        "metricSavings": {
+          "TBT": 100
+        },
+        "details": {
+          "type": "table",
+          "items": [
+            {
+              "url": "https://example.com/",
+              "duration": 115,
+              "startTime": 939.6385
+            },
+            {
+              "url": "Unattributable",
+              "duration": 91,
+              "startTime": 767.6385
+            },
+            {
+              "url": "Unattributable",
+              "duration": 56,
+              "startTime": 858.6385
+            }
+          ]
+        }
+      },
+      "dom-size-insight": {
+        "id": "dom-size-insight",
+        "title": "Optimize DOM size",
+        "score": 1,
+        "scoreDisplayMode": "numeric",
+        "numericValue": 16,
+        "numericUnit": "element",
+        "metricSavings": {
+          "INP": 0
+        },
+        "details": {
+          "type": "table",
+          "items": [
+            {
+              "statistic": "Total elements",
+              "value": {
+                "type": "numeric",
+                "granularity": 1,
+                "value": 16
+              }
+            },
+            {
+              "statistic": "DOM depth",
+              "node": {
+                "type": "node",
+                "lhId": "page-3-path",
+                "path": "1,HTML,1,BODY,1,svg,1,g,0,path",
+                "selector": "body > svg > g > path#q",
+                "boundingRect": {
+                  "top": 176,
+                  "bottom": 184,
+                  "left": 209,
+                  "right": 214,
+                  "width": 5,
+                  "height": 8
+                },
+                "snippet": "<path id=\"q\" d=\"M11.5 6.6h1.8v1.8l-1 1.6-.6-.3.8-1.3h-1z\">",
+                "nodeLabel": "body > svg > g > path#q"
+              },
+              "value": {
+                "type": "numeric",
+                "granularity": 1,
+                "value": 4
+              }
+            },
+            {
+              "statistic": "Most children",
+              "node": {
+                "type": "node",
+                "lhId": "page-2-BODY",
+                "path": "1,HTML,1,BODY",
+                "selector": "body",
+                "boundingRect": {
+                  "top": 0,
+                  "bottom": 871,
+                  "left": 0,
+                  "right": 412,
+                  "width": 412,
+                  "height": 871
+                },
+                "snippet": "<body>",
+                "nodeLabel": "body"
+              },
+              "value": {
+                "type": "numeric",
+                "granularity": 1,
+                "value": 10
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

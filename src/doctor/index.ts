@@ -172,7 +172,11 @@ export async function runDoctor(setting: EngineSetting, deps: DoctorDeps): Promi
 
   const psiReady = hasKey && psi.ok;
   const engineReady =
-    setting === 'psi' ? psi.ok : setting === 'lighthouse' ? chromeOk : chromeOk || psiReady;
+    setting === 'psi'
+      ? psi.ok && !keylessRefused
+      : setting === 'lighthouse'
+        ? chromeOk
+        : chromeOk || psiReady;
   const ready = nodeOk && network.ok && Boolean(lighthouse) && Boolean(axeVersion) && engineReady;
   if (!chromeOk && setting !== 'lighthouse') {
     lines.push({
