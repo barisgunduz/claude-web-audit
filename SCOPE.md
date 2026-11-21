@@ -52,7 +52,7 @@ Output folder: `audits/<domain>/<date>/`
 | `--engine` | `auto` | `psi`, `lighthouse` or `auto` (`psi` if `PSI_API_KEY` is set, else local Lighthouse) |
 | `--strategy` | `both` | `mobile`, `desktop` or `both` |
 | `--runs N` | `3` | Speed measurement repeats, the median is used |
-| `--compare` | `last` | Compare with the previous audit. `none` turns it off. A folder path is also accepted. |
+| `--compare last` | `none` | Compare with the previous audit. Without this flag no comparison is made. A folder path is also accepted. |
 | `--card` / `--no-card` | `card` | One-screen summary card |
 | `--social` | off | Three 4:5 social images |
 | `--no-pdf` | off | Write only JSON and `FIX_PLAN.md` |
@@ -73,7 +73,7 @@ The PageSpeed API key is never a parameter. It is read only from the `PSI_API_KE
 | `/cwa doctor` | Checks the environment (Chrome, Lighthouse, API key present, network) and names what is missing |
 | `/cwa fix [audit]` | Makes Claude work through `FIX_PLAN.md` |
 | `/cwa verify <task-id>` | Re-measures the acceptance criteria of one task |
-| `/cwa recheck` | Re-runs the audit with the same settings and compares with the previous one (shortcut for `--compare last`) |
+| `/cwa recheck` | Re-runs the audit with the same settings and automatically compares it with the previous audit (same as running the audit with `--compare last`) |
 | `/cwa compare <a> <b>` | Compares two stored audits |
 | `/cwa list` | Lists stored audits for a domain |
 
@@ -204,15 +204,23 @@ Community language files are welcome and the README explains how to add one. The
 - The crawler obeys robots.txt, uses a polite request rate and stays on the given domain. External links are only checked for status codes.
 - Never read, print or modify .env files or private keys.
 
-## 13. Runtime (to confirm in step 2)
+## 13. Runtime
 
-Proposed: Node.js on the latest active LTS, Lighthouse as a dependency, headless Chrome for PDF and PNG output, no other heavy runtime. Step 2 confirms or changes this before any code is written.
+Confirmed in step 2:
+
+- Node.js on the latest active LTS. Pinned major: 26.
+- TypeScript in strict mode, ESM, npm.
+- Argument parsing with the built-in `util.parseArgs`.
+- Vitest for tests, ESLint and Prettier for code quality.
+- Lighthouse and axe-core are added later, in step 3 and step 4.
+- Headless Chrome for PDF and PNG output, no other heavy runtime.
 
 ## 14. Docs and demo
 
 - Root docs in English: `README.md`, `SCOPE.md`, `CONTRIBUTING.md`, and `docs/` for how-it-works and examples.
 - `translations/` holds README equivalents per language (Turkish first), with how-it-works guidance, examples and small screenshots.
 - The demo audit uses barisgunduz.com.
+- The demo audit output is copied by hand into `docs/examples/` in step 10 because `audits/` is gitignored.
 - README screenshots are cropped from the generated English report and card (gauges, speed table, target distance bars, comparison table), never from the site itself.
 - The before and now images come from two real measurements.
 
