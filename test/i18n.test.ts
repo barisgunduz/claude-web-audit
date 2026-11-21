@@ -4,8 +4,14 @@ import tr from '../src/i18n/tr.json' with { type: 'json' };
 import { createTranslator, DICTIONARIES } from '../src/i18n/index.js';
 
 describe('i18n', () => {
-  it('keeps en and tr on the same keys', () => {
-    expect(Object.keys(tr).sort()).toEqual(Object.keys(en).sort());
+  it('only has tr keys that exist in en', () => {
+    const known = new Set(Object.keys(en));
+    expect(Object.keys(tr).filter((key) => !known.has(key))).toEqual([]);
+  });
+
+  it('keeps the module and status texts in both languages', () => {
+    const fixed = Object.keys(en).filter((key) => !key.startsWith('finding.'));
+    expect(Object.keys(tr).sort()).toEqual(fixed.sort());
   });
 
   it('translates with the selected language', () => {

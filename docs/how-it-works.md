@@ -1,6 +1,6 @@
 # How it works
 
-This page describes the planned pipeline, from a domain name to the output files. Only the command line parsing exists today.
+This page describes the pipeline from a domain name to the output files. The crawler, the first seven modules and `audit.json` work today. Scoring, the report, the card, the social images and `FIX_PLAN.md` come in later steps.
 
 ## 1. Normalize the domain
 
@@ -12,7 +12,11 @@ Settings come from three places. The command line wins over `cwa.config.json`, a
 
 ## 3. Crawl
 
-The crawler starts at the home page, reads robots.txt and the sitemap, and follows internal links up to `--pages` pages. It waits `--delay` milliseconds between requests. External links are only checked for their status code.
+The crawler tests the four host variants (http and https, with and without www) and records every redirect hop. The final address of the https variant decides the canonical host.
+
+It then reads robots.txt and the sitemaps (plain and gzip, including sitemap indexes). The home page is fetched first, then the sitemap URLs, then internal links in breadth first order. Paths that robots.txt blocks are not fetched. The crawler stops at exactly `--pages` pages, waits `--delay` milliseconds between requests to a host, runs at most `concurrency` requests at once, and gives each request 15 seconds.
+
+External links are checked for their status code only, up to 200 unique URLs. The crawler also requests one page that does not exist, to see how the site answers, and reads `/llms.txt`.
 
 ## 4. Run modules
 

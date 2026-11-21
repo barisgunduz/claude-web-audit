@@ -1,9 +1,12 @@
+import type { AuditDeps } from '../../audit/deps.js';
 import type { Io } from '../io.js';
 import type { ParsedArgs } from '../parse.js';
 
 export interface CommandContext {
   parsed: ParsedArgs;
   io: Io;
+  version: string;
+  deps: AuditDeps;
 }
 
 export const EXIT_OK = 0;

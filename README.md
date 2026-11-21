@@ -8,13 +8,13 @@ claude-web-audit audits a website end to end. It crawls the site, runs nine modu
 
 ## Status
 
-Under construction. The tool does not audit anything yet. The command line parses and validates its input, then exits with code 2 and says that the command is not implemented. The full plan is in [SCOPE.md](SCOPE.md).
+Under construction. The crawler and seven of the nine modules work (links, ssl, headers, seo, content, email and ai). They write `audit.json` and print a summary. Speed and accessibility report "not measured" until step 4. Scoring, the PDF report, the card and the fix plan are not written yet. The other subcommands exit with code 2. The full plan is in [SCOPE.md](SCOPE.md).
 
 Roadmap:
 
 1. Lock scope and architecture (done)
-2. Repo skeleton and English doc structure (in progress)
-3. Crawler and checks
+2. Repo skeleton and English doc structure (done)
+3. Crawler and checks (done for seven modules, in review)
 4. PageSpeed integration with local Lighthouse fallback
 5. Scoring and findings model
 6. FIX_PLAN.md generator and Claude instructions

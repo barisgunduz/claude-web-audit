@@ -8,6 +8,10 @@ export interface OutputsConfig {
   fixPlan?: boolean;
 }
 
+export interface EmailConfig {
+  dkimSelectors?: string[];
+}
+
 /** Shape of cwa.config.json. Every field is optional. */
 export interface CwaConfig {
   domain?: string;
@@ -18,6 +22,9 @@ export interface CwaConfig {
   strategy?: Strategy;
   runs?: number;
   delay?: number;
+  concurrency?: number;
+  thinContentWords?: number;
+  email?: EmailConfig;
   weights?: Partial<Record<ModuleName, number>>;
   modules?: ModuleName[];
   outputs?: OutputsConfig;
@@ -33,6 +40,9 @@ export interface Settings {
   strategy: Strategy;
   runs: number;
   delay: number;
+  concurrency: number;
+  thinContentWords: number;
+  dkimSelectors: string[];
   weights: Record<ModuleName, number>;
   modules: ModuleName[];
   outputs: Required<OutputsConfig>;

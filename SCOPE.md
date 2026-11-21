@@ -179,7 +179,7 @@ Ordering is by priority. Tasks that touch the same file are grouped together.
 
 File name: `cwa.config.json`.
 
-Fields: `domain`, `pages`, `prepared_by` (optional), `report_language` (default `en`), `engine`, `strategy`, `runs`, `delay`, `weights`, `modules` (enabled list), `outputs` (`card`, `social`, `pdf`, `fixPlan`).
+Fields: `domain`, `pages`, `prepared_by` (optional), `report_language` (default `en`), `engine`, `strategy`, `runs`, `delay`, `concurrency` (default 4, maximum 8), `thinContentWords` (default 300), `email.dkimSelectors` (list of DKIM selectors, optional), `weights`, `modules` (enabled list), `outputs` (`card`, `social`, `pdf`, `fixPlan`).
 
 Command-line parameters override config values.
 

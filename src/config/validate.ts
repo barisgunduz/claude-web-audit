@@ -21,6 +21,9 @@ const TOP_LEVEL_KEYS = [
   'strategy',
   'runs',
   'delay',
+  'concurrency',
+  'thinContentWords',
+  'email',
   'weights',
   'modules',
   'outputs',
@@ -84,6 +87,29 @@ export function validateConfig(input: unknown): CwaConfig {
   }
   if (delay !== undefined && !isWholeNumber(delay, 0, 60_000)) {
     issues.push('"delay" must be a whole number from 0 to 60000.');
+  }
+
+  const { concurrency, thinContentWords, email } = input;
+  if (concurrency !== undefined && !isWholeNumber(concurrency, 1, 8)) {
+    issues.push('"concurrency" must be a whole number from 1 to 8.');
+  }
+  if (thinContentWords !== undefined && !isWholeNumber(thinContentWords, 1, 100_000)) {
+    issues.push('"thinContentWords" must be a whole number from 1 to 100000.');
+  }
+  if (email !== undefined) {
+    if (!isObject(email)) {
+      issues.push('"email" must be an object.');
+    } else {
+      checkUnknownKeys(email, ['dkimSelectors'], '"email"', issues);
+      const selectors = email.dkimSelectors;
+      const valid =
+        selectors === undefined ||
+        (Array.isArray(selectors) &&
+          selectors.every(
+            (item) => typeof item === 'string' && /^[A-Za-z0-9._-]{1,63}$/.test(item),
+          ));
+      if (!valid) issues.push('"email.dkimSelectors" must be a list of selector names.');
+    }
   }
 
   const { weights, modules, outputs } = input;

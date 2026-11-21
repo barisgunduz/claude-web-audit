@@ -1,3 +1,7 @@
-import type { ModulePlaceholder } from '../types.js';
+import type { ModuleDefinition } from '../types.js';
 
-export const a11yModule: ModulePlaceholder = { name: 'a11y', implemented: false };
+export const a11yModule: ModuleDefinition = {
+  name: 'a11y',
+  checks: [],
+  notMeasuredReason: 'implemented in step 4',
+};

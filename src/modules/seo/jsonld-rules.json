@@ -1,0 +1,81 @@
+{
+  "localBusinessSubtypes": [
+    "LocalBusiness",
+    "AccountingService",
+    "AutoRepair",
+    "BeautySalon",
+    "Dentist",
+    "FinancialService",
+    "FoodEstablishment",
+    "Restaurant",
+    "CafeOrCoffeeShop",
+    "BarOrPub",
+    "Bakery",
+    "HairSalon",
+    "HealthClub",
+    "HomeAndConstructionBusiness",
+    "LegalService",
+    "Attorney",
+    "LodgingBusiness",
+    "Hotel",
+    "MedicalBusiness",
+    "MedicalClinic",
+    "Physician",
+    "ProfessionalService",
+    "RealEstateAgent",
+    "Store",
+    "TravelAgency"
+  ],
+  "articleTypes": ["Article", "NewsArticle", "BlogPosting", "TechArticle"],
+  "rules": [
+    {
+      "type": "LocalBusiness",
+      "includeSubtypes": true,
+      "required": ["name", "address"],
+      "recommended": [],
+      "source": "https://developers.google.com/search/docs/appearance/structured-data/local-business"
+    },
+    {
+      "type": "WebSite",
+      "required": ["name", "url"],
+      "recommended": [],
+      "source": "https://developers.google.com/search/docs/appearance/site-names"
+    },
+    {
+      "type": "BreadcrumbList",
+      "required": ["itemListElement"],
+      "recommended": [],
+      "source": "https://developers.google.com/search/docs/appearance/structured-data/breadcrumb",
+      "note": "Each ListItem needs position and a name (its own or item.name). item is required except on the last entry."
+    },
+    {
+      "type": "Article",
+      "includeSubtypes": true,
+      "required": [],
+      "recommended": ["headline", "author", "datePublished", "image"],
+      "source": "https://developers.google.com/search/docs/appearance/structured-data/article",
+      "note": "Google lists no required properties for Article."
+    },
+    {
+      "type": "FAQPage",
+      "required": ["mainEntity"],
+      "recommended": [],
+      "source": "https://schema.org/FAQPage",
+      "note": "Google removed its FAQ documentation in 2026. The rule follows the schema.org definition, not a Google requirement."
+    },
+    {
+      "type": "Product",
+      "required": ["name"],
+      "anyOf": ["offers", "review", "aggregateRating"],
+      "recommended": [],
+      "source": "https://developers.google.com/search/docs/appearance/structured-data/product-snippet"
+    },
+    {
+      "type": "Organization",
+      "required": [],
+      "recommended": ["name", "url", "logo"],
+      "source": "https://developers.google.com/search/docs/appearance/structured-data/organization",
+      "note": "Google lists no required properties for Organization."
+    }
+  ]
+}

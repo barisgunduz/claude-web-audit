@@ -1,4 +1,6 @@
-import { readFileSync } from 'node:fs';
+import type { AuditDeps } from '../audit/deps.js';
+import { CrawlError } from '../crawler/hosts.js';
+import { InputError } from '../crawler/url.js';
 import { ConfigError } from '../config/validate.js';
 import { runAudit } from './commands/audit.js';
 import { runCompare } from './commands/compare.js';
@@ -13,6 +15,7 @@ import { buildHelp } from './help.js';
 import { processIo, withRedaction, type Io } from './io.js';
 import { parseCliArgs, UsageError } from './parse.js';
 import type { CommandName } from './params.js';
+import { readVersion } from './version.js';
 
 type Handler = (context: CommandContext) => number | Promise<number>;
 
@@ -27,17 +30,12 @@ const HANDLERS: Readonly<Record<CommandName, Handler>> = {
   list: runList,
 };
 
-function readVersion(): string {
-  const text = readFileSync(new URL('../../package.json', import.meta.url), 'utf8');
-  const manifest = JSON.parse(text) as { version?: unknown };
-  return typeof manifest.version === 'string' ? manifest.version : '0.0.0';
-}
-
 /** Runs the CLI and returns the exit code. Output goes through `io` with the API key redacted. */
 export async function run(
   argv: readonly string[],
   io: Io = processIo,
   env: NodeJS.ProcessEnv = process.env,
+  deps: AuditDeps = {},
 ): Promise<number> {
   const safeIo = withRedaction(io, env);
   try {
@@ -50,9 +48,14 @@ export async function run(
       safeIo.stdout(`${readVersion()}\n`);
       return EXIT_OK;
     }
-    return await HANDLERS[parsed.command]({ parsed, io: safeIo });
+    return await HANDLERS[parsed.command]({ parsed, io: safeIo, version: readVersion(), deps });
   } catch (error) {
-    if (error instanceof UsageError || error instanceof ConfigError) {
+    if (
+      error instanceof UsageError ||
+      error instanceof ConfigError ||
+      error instanceof CrawlError ||
+      error instanceof InputError
+    ) {
       safeIo.stderr(`Error: ${error.message}\nRun "cwa --help" for usage.\n`);
       return EXIT_USAGE;
     }

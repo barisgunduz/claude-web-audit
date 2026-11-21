@@ -2,8 +2,8 @@ import en from './en.json' with { type: 'json' };
 import tr from './tr.json' with { type: 'json' };
 
 export type MessageKey = keyof typeof en;
-export type Dictionary = Partial<Record<MessageKey, string>>;
-export type Translate = (key: MessageKey) => string;
+export type Dictionary = Readonly<Record<string, string>>;
+export type Translate = (key: string) => string;
 
 export const DICTIONARIES: Readonly<Record<string, Dictionary>> = { en, tr };
 
