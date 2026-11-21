@@ -15,13 +15,8 @@ import { groupsFor, isAllowed, parseRobots } from './robots.js';
 import { readSitemaps } from './sitemap.js';
 import { probeTls, type TlsProbe } from './tls.js';
 import { traceUrl } from './trace.js';
-import {
-  isPrivateHost,
-  pathAndQuery,
-  parseDomainInput,
-  resolveUrl,
-  toCanonicalOrigin,
-} from './url.js';
+import { isPrivateHost, lookupAll } from './address.js';
+import { pathAndQuery, parseDomainInput, resolveUrl, toCanonicalOrigin } from './url.js';
 
 export const ROBOTS_TOKEN = 'claude-web-audit';
 export const REQUEST_TIMEOUT_MS = 15_000;
@@ -118,6 +113,8 @@ export async function crawl(options: CrawlOptions): Promise<CrawlResult> {
   const inputHost = parseDomainInput(options.input);
   const http = new HttpClient({
     allowPrivateHosts: isPrivateHost(inputHost),
+    // A custom fetch (used in tests) does its own routing, so names are only looked up for real requests.
+    ...(options.fetchImpl === undefined && { resolveHost: lookupAll }),
     userAgent,
     timeoutMs,
     maxBodyBytes: MAX_BODY_BYTES,

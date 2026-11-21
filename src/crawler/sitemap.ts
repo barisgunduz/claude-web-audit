@@ -19,10 +19,35 @@ export interface ParsedSitemap {
   error?: string;
 }
 
+/**
+ * The name of the first element, after any XML declaration, processing instructions
+ * (sitemap plugins add an xml-stylesheet line) and comments. It scans once, front to back.
+ */
+function rootElementName(xml: string): string | undefined {
+  let position = 0;
+  for (;;) {
+    while (position < xml.length && /\s/.test(xml[position] ?? '')) position++;
+    if (xml.startsWith('<?', position)) {
+      const end = xml.indexOf('?>', position + 2);
+      if (end === -1) return undefined;
+      position = end + 2;
+    } else if (xml.startsWith('<!--', position)) {
+      const end = xml.indexOf('-->', position + 4);
+      if (end === -1) return undefined;
+      position = end + 3;
+    } else {
+      return /^<([A-Za-z][\w:.-]*)[\s/>]/
+        .exec(xml.slice(position, position + 64))?.[1]
+        ?.toLowerCase();
+    }
+  }
+}
+
 /** Parses the XML of one sitemap or sitemap index. */
 export function parseSitemapXml(xml: string): ParsedSitemap {
   const trimmed = xml.replace(/^\uFEFF/, '').trim();
-  if (!/^(<\?xml[^>]*\?>\s*)?(<!--[\s\S]*?-->\s*)*<(urlset|sitemapindex)[\s>]/i.test(trimmed)) {
+  const root = rootElementName(trimmed);
+  if (root !== 'urlset' && root !== 'sitemapindex') {
     return { kind: 'invalid', entries: [], error: 'Root element is not urlset or sitemapindex' };
   }
   const $ = cheerio.load(trimmed, { xmlMode: true });

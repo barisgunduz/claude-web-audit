@@ -1,5 +1,3 @@
-import { isIP } from 'node:net';
-
 /** Lowercase host without a leading "www.". */
 export function bareHost(host: string): string {
   const lower = host.toLowerCase();
@@ -52,45 +50,4 @@ export function toCanonicalOrigin(url: string, canonicalOrigin: string): string 
 export function pathAndQuery(url: string): string {
   const parsed = new URL(url);
   return `${parsed.pathname}${parsed.search}`;
-}
-
-function isPrivateIpv4(host: string): boolean {
-  const parts = host.split('.').map(Number);
-  const [a = 0, b = 0] = parts;
-  return (
-    a === 0 ||
-    a === 10 ||
-    a === 127 ||
-    (a === 169 && b === 254) ||
-    (a === 172 && b >= 16 && b <= 31) ||
-    (a === 192 && b === 168) ||
-    (a === 100 && b >= 64 && b <= 127)
-  );
-}
-
-/**
- * True for names and addresses that point at the local machine or a private network.
- * It looks at the written host only, so it does not stop a public name that resolves to a
- * private address. It is a guard against redirects and links, not a network firewall.
- */
-export function isPrivateHost(hostname: string): boolean {
-  const host = hostname
-    .toLowerCase()
-    .replace(/^\[|\]$/g, '')
-    .replace(/\.$/, '');
-  if (
-    host === 'localhost' ||
-    host.endsWith('.localhost') ||
-    host.endsWith('.local') ||
-    host.endsWith('.internal')
-  ) {
-    return true;
-  }
-  if (isIP(host) === 4) return isPrivateIpv4(host);
-  if (isIP(host) === 6) {
-    const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(host)?.[1];
-    if (mapped !== undefined) return isPrivateIpv4(mapped);
-    return host === '::' || host === '::1' || /^f[cd]/.test(host) || /^fe[89ab]/.test(host);
-  }
-  return false;
 }

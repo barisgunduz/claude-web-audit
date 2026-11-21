@@ -1,5 +1,6 @@
 import type { ReadableStreamDefaultReader } from 'node:stream/web';
-import { isPrivateHost } from './url.js';
+import { isIP } from 'node:net';
+import { isPrivateAddress, isPrivateHost, type HostResolver } from './address.js';
 
 /** The error text for a request that was refused because the address is private. */
 export const BLOCKED_MESSAGE = 'Blocked: private address';
@@ -16,6 +17,8 @@ export interface HttpOptions {
   signal?: AbortSignal;
   /** Allow private addresses. Only for an audit of a site that is itself on a private address. */
   allowPrivateHosts?: boolean;
+  /** Resolves a name before the first request, to refuse names that point at private addresses. */
+  resolveHost?: HostResolver;
 }
 
 export type BodyMode = 'text' | 'bytes' | 'none';
@@ -104,6 +107,7 @@ export class HttpClient {
   private readonly now: () => number;
   private readonly nextSlot = new Map<string, number>();
   private delayMs: number;
+  private readonly publicHosts = new Map<string, Promise<void>>();
 
   constructor(options: HttpOptions) {
     this.options = options;
@@ -117,6 +121,28 @@ export class HttpClient {
   /** Raises the delay between requests, for example to follow a Crawl-delay line. It never lowers it. */
   raiseDelay(ms: number): void {
     this.delayMs = Math.max(this.delayMs, ms);
+  }
+
+  /** Looks a host name up once and refuses it when any address is private. */
+  private assertPublic(hostname: string): Promise<void> {
+    const { resolveHost, allowPrivateHosts } = this.options;
+    if (allowPrivateHosts || !resolveHost || isIP(hostname.replace(/^\[|\]$/g, '')) !== 0) {
+      return Promise.resolve();
+    }
+    const known = this.publicHosts.get(hostname);
+    if (known) return known;
+    const check = resolveHost(hostname).then(
+      (addresses) => {
+        if (addresses.some((address) => isPrivateAddress(address))) {
+          throw new HttpError('blocked', BLOCKED_MESSAGE);
+        }
+      },
+      () => {
+        throw new HttpError('network', 'Name could not be resolved');
+      },
+    );
+    this.publicHosts.set(hostname, check);
+    return check;
   }
 
   private async waitForTurn(host: string): Promise<void> {
@@ -142,6 +168,7 @@ export class HttpClient {
     if (!this.options.allowPrivateHosts && isPrivateHost(target.hostname)) {
       throw new HttpError('blocked', BLOCKED_MESSAGE);
     }
+    await this.assertPublic(target.hostname);
     await this.waitForTurn(target.host);
 
     const timeout = AbortSignal.timeout(this.options.timeoutMs);
