@@ -1,0 +1,43 @@
+import type { Engine, Strategy } from '../cli/params.js';
+import type { ModuleName } from '../modules/names.js';
+
+export interface OutputsConfig {
+  card?: boolean;
+  social?: boolean;
+  pdf?: boolean;
+  fixPlan?: boolean;
+}
+
+/** Shape of cwa.config.json. Every field is optional. */
+export interface CwaConfig {
+  domain?: string;
+  pages?: number;
+  prepared_by?: string;
+  report_language?: string;
+  engine?: Engine;
+  strategy?: Strategy;
+  runs?: number;
+  delay?: number;
+  weights?: Partial<Record<ModuleName, number>>;
+  modules?: ModuleName[];
+  outputs?: OutputsConfig;
+}
+
+/** Fully resolved settings: command line, then config file, then defaults. */
+export interface Settings {
+  domain: string;
+  pages: number;
+  preparedBy: string;
+  language: string;
+  engine: Engine;
+  strategy: Strategy;
+  runs: number;
+  delay: number;
+  weights: Record<ModuleName, number>;
+  modules: ModuleName[];
+  outputs: Required<OutputsConfig>;
+  compare: string | undefined;
+  out: string;
+  failUnder: number | undefined;
+  verbose: boolean;
+}
