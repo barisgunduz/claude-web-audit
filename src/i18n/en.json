@@ -113,7 +113,7 @@
   "finding.EML-001": "No SPF record was found.",
   "finding.EML-002": "More than one SPF record was found.",
   "finding.EML-003": "The SPF record has invalid terms.",
-  "finding.EML-004": "The SPF record needs {lookups} DNS lookups, the limit is {limit}.",
+  "finding.EML-004": "The SPF record needs more than {limit} DNS lookups (counted {lookups} before stopping).",
   "finding.EML-005": "The SPF record has a weak or missing \"all\" ({qualifier}).",
   "finding.EML-006": "No DMARC record was found.",
   "finding.EML-007": "The DMARC policy is none, so no mail is rejected or quarantined.",

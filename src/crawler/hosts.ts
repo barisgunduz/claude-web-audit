@@ -7,6 +7,12 @@ export class CrawlError extends Error {
   override readonly name = 'CrawlError';
 }
 
+/** True when a URL is on the same site (www or not) and uses the default port. */
+function endsOnSite(url: string, bare: string): boolean {
+  const parsed = new URL(url);
+  return bareHost(parsed.hostname) === bare && parsed.port === '';
+}
+
 /** Tests http and https, with and without www, and decides which host is canonical. */
 export async function detectCanonicalHost(
   http: HttpClient,
@@ -23,12 +29,19 @@ export async function detectCanonicalHost(
   }
 
   const reachable = variants.filter((variant) => variant.status > 0 && variant.error === undefined);
+  // The audit stays on the given domain. A variant that ends on another site is not a candidate.
+  const onSite = reachable.filter((variant) => endsOnSite(variant.finalUrl, bare));
   const preferred =
-    reachable.find((variant) => variant.variant === `https://${inputHost}/`) ??
-    reachable.find((variant) => variant.variant.startsWith('https://')) ??
-    reachable[0];
+    onSite.find((variant) => variant.variant === `https://${inputHost}/`) ??
+    onSite.find((variant) => variant.variant.startsWith('https://')) ??
+    onSite[0];
   if (!preferred) {
-    throw new CrawlError(`Could not reach ${inputHost} on http or https, with or without www.`);
+    const elsewhere = reachable[0] ? new URL(reachable[0].finalUrl).hostname : undefined;
+    throw new CrawlError(
+      elsewhere === undefined
+        ? `Could not reach ${inputHost} on http or https, with or without www.`
+        : `${inputHost} redirects to ${elsewhere}. Audit that domain instead.`,
+    );
   }
 
   const canonical = new URL(preferred.finalUrl);

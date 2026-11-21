@@ -10,3 +10,4 @@
 - Add `audit.json` (schema version `0-interim`) and the terminal summary.
 - Add the config fields `concurrency`, `thinContentWords` and `email.dkimSelectors`.
 - Add `docs/checks.md` with every code, its severity and its fix.
+- Refuse requests to private addresses, stay on the given domain when it redirects elsewhere, match robots.txt patterns in linear time and stop SPF lookups at the limit.

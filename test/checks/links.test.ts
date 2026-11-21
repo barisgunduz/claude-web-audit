@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { BLOCKED_MESSAGE } from '../../src/crawler/http.js';
 import { linksChecks } from '../../src/modules/links/checks.js';
 import type { Check } from '../../src/model/check.js';
 import {
@@ -80,6 +81,23 @@ describe('links.external-status', () => {
       'https://f.test/ (503)',
     ]);
     expect(result.findings[0]?.code).toBe('LINK-004');
+  });
+});
+
+describe('links.external-status blocked links', () => {
+  it('does not call a link broken when the crawler refused to request it', async () => {
+    const crawl = makeCrawl({
+      externalLinks: [
+        {
+          url: 'http://10.0.0.5/',
+          status: 0,
+          finalUrl: 'http://10.0.0.5/',
+          error: BLOCKED_MESSAGE,
+          sources: [home],
+        },
+      ],
+    });
+    expect((await check('external-status').run(makeContext(crawl))).findings).toEqual([]);
   });
 });
 

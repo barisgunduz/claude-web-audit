@@ -1,4 +1,8 @@
 import type { ReadableStreamDefaultReader } from 'node:stream/web';
+import { isPrivateHost } from './url.js';
+
+/** The error text for a request that was refused because the address is private. */
+export const BLOCKED_MESSAGE = 'Blocked: private address';
 
 export interface HttpOptions {
   userAgent: string;
@@ -10,6 +14,8 @@ export interface HttpOptions {
   sleep?: (ms: number) => Promise<void>;
   now?: () => number;
   signal?: AbortSignal;
+  /** Allow private addresses. Only for an audit of a site that is itself on a private address. */
+  allowPrivateHosts?: boolean;
 }
 
 export type BodyMode = 'text' | 'bytes' | 'none';
@@ -35,9 +41,9 @@ export interface HttpResponse {
 
 export class HttpError extends Error {
   override readonly name = 'HttpError';
-  readonly kind: 'timeout' | 'network' | 'aborted';
+  readonly kind: 'timeout' | 'network' | 'aborted' | 'blocked';
 
-  constructor(kind: 'timeout' | 'network' | 'aborted', message: string) {
+  constructor(kind: 'timeout' | 'network' | 'aborted' | 'blocked', message: string) {
     super(message);
     this.kind = kind;
   }
@@ -132,7 +138,11 @@ export class HttpClient {
   private async attempt(url: string, request: RequestOptions): Promise<HttpResponse> {
     const { signal: stop } = this.options;
     if (stop?.aborted) throw new HttpError('aborted', 'Stopped');
-    await this.waitForTurn(new URL(url).host);
+    const target = new URL(url);
+    if (!this.options.allowPrivateHosts && isPrivateHost(target.hostname)) {
+      throw new HttpError('blocked', BLOCKED_MESSAGE);
+    }
+    await this.waitForTurn(target.host);
 
     const timeout = AbortSignal.timeout(this.options.timeoutMs);
     const signal = stop ? AbortSignal.any([timeout, stop]) : timeout;

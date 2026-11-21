@@ -2,6 +2,7 @@ import { gzipSync } from 'node:zlib';
 import { afterEach, describe, expect, it } from 'vitest';
 import { crawl, type CrawlOptions } from '../../src/crawler/crawl.js';
 import { CrawlError } from '../../src/crawler/hosts.js';
+import { BLOCKED_MESSAGE } from '../../src/crawler/http.js';
 import { InputError } from '../../src/crawler/url.js';
 import { goodTls, requestUrl } from '../support/builders.js';
 import {
@@ -453,5 +454,113 @@ describe('external links', () => {
         .filter((request) => request.url.endsWith('/no-head'))
         .map((request) => request.method),
     ).toEqual(['HEAD', 'GET']);
+  });
+});
+
+describe('staying on the given domain', () => {
+  it('refuses a canonical host on another site', async () => {
+    site = await startTestSite((request) =>
+      request.url.hostname.endsWith('example.test')
+        ? redirect('https://other-site.test/')
+        : html('Other'),
+    );
+    await expect(
+      crawl({
+        input: 'example.test',
+        pages: 5,
+        delayMs: 0,
+        concurrency: 1,
+        version: '1',
+        fetchImpl: site.fetchImpl,
+      }),
+    ).rejects.toThrow('example.test redirects to other-site.test. Audit that domain instead.');
+    expect(site.requests.every((request) => !request.url.includes('other-site.test/robots'))).toBe(
+      true,
+    );
+  });
+
+  it('refuses a canonical host on a non-default port', async () => {
+    site = await startTestSite((request) =>
+      redirect(`https://example.test:8443${request.url.pathname}`),
+    );
+    await expect(
+      crawl({
+        input: 'example.test',
+        pages: 5,
+        delayMs: 0,
+        concurrency: 1,
+        version: '1',
+        fetchImpl: site.fetchImpl,
+      }),
+    ).rejects.toBeInstanceOf(CrawlError);
+  });
+
+  it('uses a variant on the same site when the other variant leaves it', async () => {
+    site = await startTestSite((request) =>
+      request.url.hostname === 'example.test'
+        ? redirect('https://other-site.test/')
+        : html('Home on www'),
+    );
+    const result = await crawl({
+      input: 'example.test',
+      pages: 3,
+      delayMs: 0,
+      concurrency: 1,
+      version: '1',
+      fetchImpl: site.fetchImpl,
+      tlsProbe: () => Promise.resolve(goodTls()),
+    });
+    expect(result.host.canonicalHost).toBe('www.example.test');
+    expect(result.host.consistent).toBe(false);
+  });
+});
+
+describe('private addresses', () => {
+  it('does not request external links to private addresses, and does not call them broken', async () => {
+    const result = await run({
+      '/': html(
+        [
+          'http://169.254.169.254/latest/meta-data',
+          'http://127.0.0.1:9/admin',
+          'http://10.0.0.5/',
+          'http://intranet.local/',
+          'https://ext.example.net/ok',
+        ]
+          .map((href) => link(href))
+          .join(''),
+      ),
+    });
+    const blocked = result.externalLinks.filter((entry) => entry.error === BLOCKED_MESSAGE);
+    expect(blocked).toHaveLength(4);
+    expect(
+      site?.requests.some((request) =>
+        /169\.254|127\.0\.0\.1|10\.0\.0\.5|intranet\.local/.test(request.url),
+      ),
+    ).toBe(false);
+  });
+
+  it('does not follow a redirect to a private address', async () => {
+    const result = await run({
+      '/': html(link('/jump')),
+      '/jump': redirect('http://127.0.0.1/admin'),
+    });
+    const jump = result.pages.find((page) => page.url.endsWith('/jump'));
+    expect(jump?.error).toBe(BLOCKED_MESSAGE);
+    expect(jump?.status).toBe(0);
+    expect(site?.requests.some((request) => request.url.includes('127.0.0.1'))).toBe(false);
+  });
+
+  it('allows private addresses when the audited site itself is private', async () => {
+    site = await startTestSite(canonicalSite({ '/': html('Local site') }, 'localhost'));
+    const result = await crawl({
+      input: 'localhost',
+      pages: 5,
+      delayMs: 0,
+      concurrency: 1,
+      version: '1',
+      fetchImpl: site.fetchImpl,
+      tlsProbe: () => Promise.resolve(goodTls({ host: 'localhost' })),
+    });
+    expect(result.pages[0]?.status).toBe(200);
   });
 });

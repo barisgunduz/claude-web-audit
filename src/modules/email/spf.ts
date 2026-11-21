@@ -35,25 +35,40 @@ function spfRecords(records: readonly (readonly string[])[]): string[] {
   return records.map((parts) => parts.join('')).filter((record) => /^v=spf1(\s|$)/i.test(record));
 }
 
+interface LookupState {
+  lookups: number;
+  seen: Set<string>;
+}
+
+/**
+ * Counts the DNS lookups of a record, following include and redirect. It stops asking DNS as
+ * soon as the count passes the limit, so a hostile record cannot make the audit query endlessly.
+ */
 async function countLookups(
   dns: DnsResolver,
   record: string,
-  seen: Set<string>,
+  state: LookupState,
   depth: number,
-): Promise<number> {
-  let lookups = 0;
+): Promise<void> {
   for (const term of splitTerms(record)) {
+    if (state.lookups > SPF_LOOKUP_LIMIT) return;
     const body = (QUALIFIERS.has(term[0] ?? '') ? term.slice(1) : term).toLowerCase();
-    if (/^(a|mx|ptr|exists)(:|\/|$)/.test(body)) lookups++;
+    if (/^(a|mx|ptr|exists)(:|\/|$)/.test(body)) state.lookups++;
     const target = /^include:(.+)$/.exec(body)?.[1] ?? /^redirect=(.+)$/.exec(body)?.[1];
     if (target === undefined) continue;
-    lookups++;
-    if (seen.has(target) || depth >= SPF_LOOKUP_LIMIT) continue;
-    seen.add(target);
+    state.lookups++;
+    if (state.lookups > SPF_LOOKUP_LIMIT || state.seen.has(target) || depth >= SPF_LOOKUP_LIMIT)
+      continue;
+    state.seen.add(target);
     const [inner] = spfRecords(await dns.resolveTxt(target));
-    if (inner !== undefined) lookups += await countLookups(dns, inner, seen, depth + 1);
+    if (inner !== undefined) await countLookups(dns, inner, state, depth + 1);
   }
-  return lookups;
+}
+
+async function lookupCount(dns: DnsResolver, record: string): Promise<number> {
+  const state: LookupState = { lookups: 0, seen: new Set() };
+  await countLookups(dns, record, state, 0);
+  return state.lookups;
 }
 
 export async function analyzeSpf(dns: DnsResolver, record: string): Promise<SpfAnalysis> {
@@ -65,7 +80,7 @@ export async function analyzeSpf(dns: DnsResolver, record: string): Promise<SpfA
     invalidTerms,
     allQualifier: qualifier as SpfAnalysis['allQualifier'],
     hasRedirect: terms.some((term) => /^redirect=/i.test(term)),
-    lookups: await countLookups(dns, record, new Set(), 0),
+    lookups: await lookupCount(dns, record),
   };
 }
 

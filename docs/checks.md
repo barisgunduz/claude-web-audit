@@ -152,7 +152,7 @@ Some topics could be reported twice. Each one has one owner, so the same issue i
 | EML-001 | important | No SPF record was found. | Publish an SPF record. |
 | EML-002 | important | More than one SPF record was found. | Merge them into one record. |
 | EML-003 | important | The SPF record has invalid terms. | Fix the terms listed in the evidence. |
-| EML-004 | important | The SPF record needs {lookups} DNS lookups, the limit is {limit}. | Remove include terms or flatten the record. |
+| EML-004 | important | The SPF record needs more than {limit} DNS lookups (counted {lookups} before stopping). | Remove include terms or flatten the record. |
 | EML-005 | important | The SPF record has a weak or missing "all" ({qualifier}). | End the record with ~all or -all. |
 | EML-006 | important | No DMARC record was found. | Publish a DMARC record at _dmarc. |
 | EML-007 | improvement | The DMARC policy is none, so no mail is rejected or quarantined. | Move to quarantine or reject after reviewing reports. |

@@ -15,7 +15,13 @@ import { groupsFor, isAllowed, parseRobots } from './robots.js';
 import { readSitemaps } from './sitemap.js';
 import { probeTls, type TlsProbe } from './tls.js';
 import { traceUrl } from './trace.js';
-import { pathAndQuery, parseDomainInput, resolveUrl, toCanonicalOrigin } from './url.js';
+import {
+  isPrivateHost,
+  pathAndQuery,
+  parseDomainInput,
+  resolveUrl,
+  toCanonicalOrigin,
+} from './url.js';
 
 export const ROBOTS_TOKEN = 'claude-web-audit';
 export const REQUEST_TIMEOUT_MS = 15_000;
@@ -109,7 +115,9 @@ export async function crawl(options: CrawlOptions): Promise<CrawlResult> {
   const userAgent = buildUserAgent(options.version);
   const timeoutMs = options.timeoutMs ?? REQUEST_TIMEOUT_MS;
   const shouldStop = (): boolean => options.signal?.aborted === true;
+  const inputHost = parseDomainInput(options.input);
   const http = new HttpClient({
+    allowPrivateHosts: isPrivateHost(inputHost),
     userAgent,
     timeoutMs,
     maxBodyBytes: MAX_BODY_BYTES,
@@ -120,7 +128,6 @@ export async function crawl(options: CrawlOptions): Promise<CrawlResult> {
   });
   const errors: string[] = [];
 
-  const inputHost = parseDomainInput(options.input);
   log(`Checking host variants for ${inputHost}`);
   const host = await detectCanonicalHost(http, inputHost);
   const origin = host.canonicalOrigin;

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { contentSignalsFor, groupsFor, isAllowed, parseRobots } from '../../src/crawler/robots.js';
+import {
+  contentSignalsFor,
+  groupsFor,
+  isAllowed,
+  matchesPattern,
+  MAX_PATTERN_LENGTH,
+  parseRobots,
+} from '../../src/crawler/robots.js';
 
 describe('parseRobots', () => {
   it('groups consecutive user-agent lines and reads rules and sitemaps', () => {
@@ -111,5 +118,49 @@ describe('isAllowed', () => {
     const rules = parseRobots('User-agent: *\nDisallow: /a+b(1)');
     expect(isAllowed(rules, 'x', '/a+b(1)')).toBe(false);
     expect(isAllowed(rules, 'x', '/aab')).toBe(true);
+  });
+});
+
+describe('matchesPattern', () => {
+  it.each([
+    ['/a', '/a', true],
+    ['/a', '/ab/c', true],
+    ['/a', '/b', false],
+    ['/a$', '/a', true],
+    ['/a$', '/ab', false],
+    ['/*.pdf', '/x/y.pdf', true],
+    ['/*.pdf$', '/x/y.pdf?x=1', false],
+    ['/a*b*c', '/a1b2c3', true],
+    ['/a*b*c', '/a1c2b3', false],
+    ['*', '/anything', true],
+    ['/a+b(1)', '/a+b(1)', true],
+    ['/a.b', '/aXb', false],
+    ['/a*', '/a', true],
+  ])('%s against %s is %s', (pattern, path, expected) => {
+    expect(matchesPattern(pattern, path)).toBe(expected);
+  });
+
+  it('does not slow down on a hostile pattern with many wildcards', () => {
+    const hostile = `/${'a*'.repeat(200)}b`;
+    const text = `/${'a'.repeat(4000)}`;
+    const started = performance.now();
+    expect(matchesPattern(hostile, text)).toBe(false);
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
+
+  it('collapses repeated stars and ignores rules that are too long', () => {
+    const parsed = parseRobots(
+      `User-agent: *\nDisallow: /a***b\nDisallow: /${'x'.repeat(MAX_PATTERN_LENGTH + 1)}`,
+    );
+    expect(parsed.groups[0]?.rules).toEqual([{ type: 'disallow', path: '/a*b' }]);
+    expect(parsed.issues[0]?.reason).toContain('too long');
+  });
+
+  it('stays fast when a robots.txt is built to hurt', () => {
+    const text = `User-agent: *\n${Array.from({ length: 2000 }, () => `Disallow: /${'a*'.repeat(60)}b`).join('\n')}`;
+    const parsed = parseRobots(text);
+    const started = performance.now();
+    expect(isAllowed(parsed, 'x', `/${'a'.repeat(1500)}`)).toBe(true);
+    expect(performance.now() - started).toBeLessThan(3000);
   });
 });

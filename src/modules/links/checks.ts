@@ -1,4 +1,5 @@
 import { makeFinding, outcome, stripTrailingSlash } from '../../checks/support.js';
+import { BLOCKED_MESSAGE } from '../../crawler/http.js';
 import { toCanonicalOrigin } from '../../crawler/url.js';
 import type { Check, CheckContext } from '../../model/check.js';
 import type { PageRecord } from '../../model/crawl.js';
@@ -90,7 +91,10 @@ const externalStatus: Check = {
   codes: ['LINK-004'],
   run({ crawl }) {
     const broken = crawl.externalLinks.filter(
-      (link) => !UNVERIFIABLE.has(link.status) && (link.status === 0 || link.status >= 400),
+      (link) =>
+        link.error !== BLOCKED_MESSAGE &&
+        !UNVERIFIABLE.has(link.status) &&
+        (link.status === 0 || link.status >= 400),
     );
     const evidence = broken.map(
       (link) => `${link.url} (${link.status === 0 ? 'no response' : link.status})`,

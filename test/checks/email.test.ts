@@ -99,6 +99,38 @@ describe('email.spf', () => {
   });
 });
 
+describe('spf lookups are bounded', () => {
+  it('stops asking DNS once the limit is passed, even for an endless chain of includes', async () => {
+    let queries = 0;
+    const dns = {
+      resolveTxt: (name: string) => {
+        queries++;
+        const next = Number(/^n(\d+)\./.exec(name)?.[1] ?? 0) + 1;
+        return Promise.resolve([[`v=spf1 include:n${next}.test include:m${next}.test -all`]]);
+      },
+      resolveMx: () => Promise.resolve([]),
+    };
+    const analysis = await analyzeSpf(dns, 'v=spf1 include:n0.test -all');
+    expect(analysis.lookups).toBeGreaterThan(SPF_LOOKUP_LIMIT);
+    expect(queries).toBeLessThanOrEqual(SPF_LOOKUP_LIMIT + 2);
+  });
+
+  it('does not query for a record that already passes the limit with plain terms', async () => {
+    let queries = 0;
+    const dns = {
+      resolveTxt: () => {
+        queries++;
+        return Promise.resolve([]);
+      },
+      resolveMx: () => Promise.resolve([]),
+    };
+    const record = `v=spf1 ${Array.from({ length: 30 }, (_, index) => `include:i${index}.test`).join(' ')} -all`;
+    const analysis = await analyzeSpf(dns, record);
+    expect(analysis.lookups).toBe(SPF_LOOKUP_LIMIT + 1);
+    expect(queries).toBeLessThanOrEqual(SPF_LOOKUP_LIMIT);
+  });
+});
+
 describe('email.dmarc', () => {
   const run = (record: string[] | undefined) =>
     check('dmarc').run(context({ txt: record ? txt({ '_dmarc.example.test': record }) : {} }));

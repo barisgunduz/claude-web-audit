@@ -79,6 +79,10 @@ TypeScript is pinned to 6.0.3. The latest release is 7.0.2, but typescript-eslin
 
 ## Safety
 
-- The API key is only read from the environment, and all terminal output is redacted for its value.
+- The API key is only read from the environment, and all terminal output is redacted for its value. The audit does not read it in this version.
 - The config validator rejects unknown fields, so a key in the config file is an error.
-- The crawler obeys robots.txt, uses a polite request rate and stays on the given domain.
+- The crawler obeys robots.txt, uses a polite request rate and stays on the given domain. If the given domain redirects to another site, the audit stops with a message and does not crawl the other site. A canonical host on a non-default port is not accepted.
+- Requests to private addresses are refused: `localhost`, `*.local`, `*.internal`, loopback, link-local (including 169.254.169.254), private IPv4 ranges and the IPv6 equivalents. This covers redirects and external links, so a hostile site cannot point the audit at an internal service. It looks at the written host only, so a public name that resolves to a private address is not caught. If the audited domain is itself private (for example `localhost`), private addresses are allowed for that audit.
+- robots.txt patterns are matched with a linear wildcard matcher and not with regular expressions, rules longer than 2048 characters are ignored, and a file is read up to 20,000 rules. A hostile robots.txt cannot make the audit slow.
+- SPF checks stop asking DNS as soon as the count passes the limit of 10 lookups, so a hostile chain of includes cannot make the audit send endless queries.
+- Page bodies are capped at 5 MB, sitemaps at 50 MB, external links at 200 URLs, and every request has a 15 second timeout.

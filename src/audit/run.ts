@@ -1,6 +1,7 @@
 import type { Settings } from '../config/types.js';
 import { crawl } from '../crawler/crawl.js';
 import { HttpClient } from '../crawler/http.js';
+import { isPrivateHost } from '../crawler/url.js';
 import type { CheckContext } from '../model/check.js';
 import type { CrawlResult } from '../model/crawl.js';
 import type { ModuleResult } from '../model/finding.js';
@@ -49,6 +50,7 @@ export async function runAudit({
     timeoutMs: deps.timeoutMs ?? REQUEST_TIMEOUT_MS,
     maxBodyBytes: MAX_BODY_BYTES,
     delayMs: settings.delay,
+    allowPrivateHosts: isPrivateHost(result.host.inputHost),
     ...(deps.fetchImpl && { fetchImpl: deps.fetchImpl }),
     ...(deps.sleep && { sleep: deps.sleep }),
     ...(deps.signal && { signal: deps.signal }),
