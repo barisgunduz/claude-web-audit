@@ -1,0 +1,28 @@
+{
+  "domain": "example.com",
+  "pages": 150,
+  "prepared_by": "",
+  "report_language": "en",
+  "engine": "auto",
+  "strategy": "both",
+  "runs": 3,
+  "delay": 250,
+  "weights": {
+    "speed": 20,
+    "seo": 20,
+    "links": 10,
+    "ssl": 10,
+    "a11y": 10,
+    "headers": 8,
+    "content": 8,
+    "ai": 8,
+    "email": 6
+  },
+  "modules": ["links", "ssl", "headers", "seo", "content", "speed", "a11y", "email", "ai"],
+  "outputs": {
+    "card": true,
+    "social": false,
+    "pdf": true,
+    "fixPlan": true
+  }
+}
