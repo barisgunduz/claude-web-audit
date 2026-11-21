@@ -23,6 +23,9 @@ describe('validateConfig', () => {
       strategy: 'mobile',
       runs: 1,
       delay: 0,
+      concurrency: 8,
+      thinContentWords: 150,
+      email: { dkimSelectors: ['google', 'selector1'] },
       weights: { speed: 30 },
       modules: ['seo'],
       outputs: { card: false, social: true, pdf: true, fixPlan: false },
@@ -40,6 +43,14 @@ describe('validateConfig', () => {
     [{ strategy: 'tablet' }, '"strategy"'],
     [{ runs: 99 }, '"runs"'],
     [{ delay: -1 }, '"delay"'],
+    [{ concurrency: 0 }, '"concurrency"'],
+    [{ concurrency: 9 }, '"concurrency"'],
+    [{ concurrency: 4.5 }, '"concurrency"'],
+    [{ thinContentWords: 0 }, '"thinContentWords"'],
+    [{ email: 'x' }, '"email" must be an object'],
+    [{ email: { dkimSelectors: ['bad selector'] } }, 'dkimSelectors'],
+    [{ email: { dkimSelectors: 'google' } }, 'dkimSelectors'],
+    [{ email: { mx: true } }, 'Unknown field "mx"'],
     [{ report_language: 'english!' }, '"report_language"'],
     [{ weights: { speed: -1 } }, 'Weight for "speed"'],
     [{ weights: { colour: 1 } }, 'Unknown field "colour"'],
@@ -118,6 +129,25 @@ describe('resolveSettings merge order', () => {
     expect(settings.modules).toEqual([...MODULE_NAMES]);
     expect(settings.weights).toEqual(DEFAULT_WEIGHTS);
     expect(settings.outputs).toEqual({ card: true, social: false, pdf: true, fixPlan: true });
+  });
+
+  it('defaults the new fields and takes them from the config file', () => {
+    const defaults = resolveSettings({}, {}, 'example.com');
+    expect([defaults.concurrency, defaults.thinContentWords, defaults.dkimSelectors]).toEqual([
+      4,
+      300,
+      [],
+    ]);
+    const custom = resolveSettings(
+      { concurrency: 2, thinContentWords: 120, email: { dkimSelectors: ['s1'] } },
+      {},
+      'example.com',
+    );
+    expect([custom.concurrency, custom.thinContentWords, custom.dkimSelectors]).toEqual([
+      2,
+      120,
+      ['s1'],
+    ]);
   });
 
   it('lets the config file override defaults', () => {

@@ -7,6 +7,11 @@
   "strategy": "both",
   "runs": 3,
   "delay": 250,
+  "concurrency": 4,
+  "thinContentWords": 300,
+  "email": {
+    "dkimSelectors": ["google", "selector1"]
+  },
   "weights": {
     "speed": 20,
     "seo": 20,

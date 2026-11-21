@@ -12,3 +12,6 @@ export const DEFAULT_WEIGHTS: Readonly<Record<ModuleName, number>> = {
   ai: 8,
   email: 6,
 };
+
+export const DEFAULT_CONCURRENCY = 4;
+export const DEFAULT_THIN_CONTENT_WORDS = 300;
