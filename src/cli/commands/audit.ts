@@ -1,14 +1,43 @@
+import { runAudit as runAuditPipeline } from '../../audit/run.js';
+import { buildSummary, writeAuditJson } from '../../audit/output.js';
 import { loadConfigFile } from '../../config/load.js';
 import { resolveSettings } from '../../config/resolve.js';
 import { DEFAULTS } from '../params.js';
-import { reportNotImplemented, type CommandContext } from './context.js';
+import { EXIT_OK, type CommandContext } from './context.js';
 
-export async function runAudit({ parsed, io }: CommandContext): Promise<number> {
+export async function runAudit({ parsed, io, version, deps }: CommandContext): Promise<number> {
   const explicitConfig = parsed.options.config;
   const config = await loadConfigFile(
     explicitConfig ?? DEFAULTS.config,
     explicitConfig !== undefined,
   );
-  resolveSettings(config, parsed.options, parsed.args[0]);
-  return reportNotImplemented(io);
+  const settings = resolveSettings(config, parsed.options, parsed.args[0]);
+
+  // Ctrl+C stops the crawl, and the findings so far are still written.
+  const controller = new AbortController();
+  const onInterrupt = (): void => {
+    controller.abort();
+  };
+  if (!deps.signal) process.once('SIGINT', onInterrupt);
+
+  try {
+    const log =
+      parsed.options.verbose === true
+        ? (message: string) => {
+            io.stderr(`${message}\n`);
+          }
+        : undefined;
+    const run = await runAuditPipeline({
+      settings,
+      version,
+      deps: { signal: controller.signal, ...deps },
+      ...(log && { log }),
+    });
+    const now = deps.now?.() ?? new Date();
+    const file = await writeAuditJson(run, settings, version, deps.cwd ?? process.cwd(), now);
+    io.stdout(`${buildSummary(run, file).join('\n')}\n`);
+    return EXIT_OK;
+  } finally {
+    process.off('SIGINT', onInterrupt);
+  }
 }
