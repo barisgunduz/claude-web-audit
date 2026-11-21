@@ -49,6 +49,12 @@ The PageSpeed API key is never a parameter. It is read only from the `PSI_API_KE
 
 The source of truth for this table is `src/cli/params.ts`. The `--help` text is generated from the same table.
 
+## What works today
+
+The audit command (`cwa <domain>`) runs the crawler and the modules links, ssl, headers, seo, content, email and ai. It uses `--pages`, `--only`, `--skip`, `--delay`, `--out`, `--config` and `--verbose`. The other parameters are parsed and checked, and have no effect yet. The subcommands other than the audit command exit with code 2.
+
+The audit writes `audits/<domain>/<date>/audit.json` (schema version `0-interim`) and prints a summary of at most 10 lines. Ctrl+C stops the crawl, and the findings so far are still written.
+
 ## Subcommands
 
 | Subcommand | What it does |
@@ -75,6 +81,9 @@ The source of truth for this table is `src/cli/params.ts`. The `--help` text is 
 | `strategy` | `mobile`, `desktop` or `both` |
 | `runs` | Speed measurement repeats |
 | `delay` | Wait between requests in milliseconds |
+| `concurrency` | Requests in flight at once, 1 to 8, default 4 |
+| `thinContentWords` | Pages with fewer words count as thin content, default 300 |
+| `email.dkimSelectors` | List of DKIM selectors to look up. Without it DKIM is reported as not measured. |
 | `weights` | Module weights, a number of 0 or more per module |
 | `modules` | List of enabled modules |
 | `outputs` | `card`, `social`, `pdf` and `fixPlan`, each true or false |
