@@ -240,21 +240,54 @@ describe('page cap, click depth and inbound links', () => {
 });
 
 describe('politeness', () => {
-  it('waits between requests to the same host', async () => {
-    const result = await run(
-      {
+  it('waits the delay between requests to the same host', async () => {
+    // A fake clock: sleeping moves time forward, so no real time passes.
+    let clock = 0;
+    const starts: number[] = [];
+    site = await startTestSite(
+      canonicalSite({
         '/': html([1, 2, 3, 4].map((n) => link(`/p${n}`)).join('')),
         ...Object.fromEntries([1, 2, 3, 4].map((n) => [`/p${n}`, html('x')])),
-      },
-      { delayMs: 60, concurrency: 4 },
+      }),
     );
+    const real = site.fetchImpl;
+    const fetchImpl: typeof fetch = (input, init) => {
+      if (requestUrl(input).startsWith('https://example.test/')) starts.push(clock);
+      return real(input, init);
+    };
+    const result = await crawl({
+      input: 'example.test',
+      pages: 50,
+      delayMs: 60,
+      concurrency: 4,
+      version: '1',
+      fetchImpl,
+      tlsProbe: () => Promise.resolve(goodTls()),
+      now: () => clock,
+      sleep: (ms) => {
+        clock += ms;
+        return Promise.resolve();
+      },
+    });
     expect(result.pages).toHaveLength(5);
-    const times = (site?.requests ?? [])
-      .filter((request) => request.url.startsWith('https://example.test'))
-      .map((request) => request.at)
-      .sort((a, b) => a - b);
-    const gaps = times.slice(1).map((time, index) => time - (times[index] ?? 0));
-    expect(Math.min(...gaps)).toBeGreaterThanOrEqual(45);
+    expect(starts.length).toBeGreaterThanOrEqual(5);
+    const gaps = starts.slice(1).map((time, index) => time - (starts[index] ?? 0));
+    expect(Math.min(...gaps)).toBeGreaterThanOrEqual(60);
+  });
+
+  it('does not wait when the delay is zero', async () => {
+    const waits: number[] = [];
+    await run(
+      { '/': html(link('/a')), '/a': html('A') },
+      {
+        delayMs: 0,
+        sleep: (ms) => {
+          waits.push(ms);
+          return Promise.resolve();
+        },
+      },
+    );
+    expect(waits).toEqual([]);
   });
 
   it('never runs more requests at once than the concurrency limit', async () => {

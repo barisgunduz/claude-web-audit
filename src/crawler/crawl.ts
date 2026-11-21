@@ -34,6 +34,8 @@ export interface CrawlOptions {
   timeoutMs?: number;
   externalCap?: number;
   sleep?: (ms: number) => Promise<void>;
+  /** The clock used for the delay between requests. Tests inject a fake one. */
+  now?: () => number;
   log?: (message: string) => void;
 }
 
@@ -121,6 +123,7 @@ export async function crawl(options: CrawlOptions): Promise<CrawlResult> {
     delayMs: options.delayMs,
     ...(options.fetchImpl && { fetchImpl: options.fetchImpl }),
     ...(options.sleep && { sleep: options.sleep }),
+    ...(options.now && { now: options.now }),
     ...(options.signal && { signal: options.signal }),
   });
   const errors: string[] = [];
