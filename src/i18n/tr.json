@@ -1,0 +1,15 @@
+{
+  "module.links": "Bağlantılar",
+  "module.ssl": "SSL",
+  "module.headers": "Güvenlik başlıkları",
+  "module.seo": "SEO",
+  "module.content": "İçerik",
+  "module.speed": "Hız",
+  "module.a11y": "Erişilebilirlik",
+  "module.email": "E-posta",
+  "module.ai": "Yapay zeka görünürlüğü",
+  "severity.critical": "Kritik",
+  "severity.important": "Önemli",
+  "severity.improvement": "İyileştirme",
+  "status.notMeasured": "Ölçülmedi"
+}

@@ -1,0 +1,15 @@
+{
+  "module.links": "Links",
+  "module.ssl": "SSL",
+  "module.headers": "Security headers",
+  "module.seo": "SEO",
+  "module.content": "Content",
+  "module.speed": "Speed",
+  "module.a11y": "Accessibility",
+  "module.email": "Email",
+  "module.ai": "AI visibility",
+  "severity.critical": "Critical",
+  "severity.important": "Important",
+  "severity.improvement": "Improvement",
+  "status.notMeasured": "Not measured"
+}
