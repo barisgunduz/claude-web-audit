@@ -7,6 +7,8 @@ import { MODULE_NAMES } from '../src/modules/names.js';
 import { CHECKS, checkCodes, MODULES } from '../src/modules/registry.js';
 import { makeFinding } from '../src/checks/support.js';
 
+// Built from code points so that this file holds no dash character itself.
+const DASHES = new RegExp(`[${String.fromCharCode(0x2013, 0x2014)}]`);
 const docs = readFileSync('docs/checks.md', 'utf8');
 const PLACEHOLDERS = new Set([
   'count',
@@ -79,7 +81,7 @@ describe('check registry', () => {
   });
 
   it('keeps messages free of em dashes and en dashes', () => {
-    for (const message of Object.values(en)) expect(message).not.toMatch(/[–—]/);
+    for (const message of Object.values(en)) expect(message).not.toMatch(DASHES);
   });
 });
 
