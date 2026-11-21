@@ -1,6 +1,12 @@
 import { DEFAULTS, type CliOptions } from '../cli/params.js';
 import { MODULE_NAMES } from '../modules/names.js';
-import { DEFAULT_CONCURRENCY, DEFAULT_THIN_CONTENT_WORDS, DEFAULT_WEIGHTS } from './defaults.js';
+import {
+  DEFAULT_A11Y_PAGES,
+  DEFAULT_CONCURRENCY,
+  DEFAULT_SPEED_PAGES,
+  DEFAULT_THIN_CONTENT_WORDS,
+  DEFAULT_WEIGHTS,
+} from './defaults.js';
 import type { CwaConfig, Settings } from './types.js';
 import { ConfigError } from './validate.js';
 
@@ -44,6 +50,9 @@ export function resolveSettings(
     delay: pick(cli.delay, config.delay, DEFAULTS.delay),
     concurrency: pick(config.concurrency, DEFAULT_CONCURRENCY),
     thinContentWords: pick(config.thinContentWords, DEFAULT_THIN_CONTENT_WORDS),
+    speedPages: pick(config.speedPages, DEFAULT_SPEED_PAGES),
+    a11yPages: pick(config.a11yPages, DEFAULT_A11Y_PAGES),
+    chromePath: config.chromePath,
     dkimSelectors: config.email?.dkimSelectors ?? [],
     weights: { ...DEFAULT_WEIGHTS, ...config.weights },
     modules,

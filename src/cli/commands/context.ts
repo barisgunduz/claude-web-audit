@@ -7,6 +7,8 @@ export interface CommandContext {
   io: Io;
   version: string;
   deps: AuditDeps;
+  /** The process environment. Only the audit command reads PSI_API_KEY and CHROME_PATH from it. */
+  env: NodeJS.ProcessEnv;
 }
 
 export const EXIT_OK = 0;

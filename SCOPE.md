@@ -179,7 +179,7 @@ Ordering is by priority. Tasks that touch the same file are grouped together.
 
 File name: `cwa.config.json`.
 
-Fields: `domain`, `pages`, `prepared_by` (optional), `report_language` (default `en`), `engine`, `strategy`, `runs`, `delay`, `concurrency` (default 4, maximum 8), `thinContentWords` (default 300), `email.dkimSelectors` (list of DKIM selectors, optional), `weights`, `modules` (enabled list), `outputs` (`card`, `social`, `pdf`, `fixPlan`).
+Fields: `domain`, `pages`, `prepared_by` (optional), `report_language` (default `en`), `engine`, `strategy`, `runs`, `delay`, `concurrency` (default 4, maximum 8), `thinContentWords` (default 300), `speedPages` (default 3, maximum 10), `a11yPages` (default 10, maximum 50), `chromePath` (optional), `email.dkimSelectors` (list of DKIM selectors, optional), `weights`, `modules` (enabled list), `outputs` (`card`, `social`, `pdf`, `fixPlan`).
 
 Command-line parameters override config values.
 
@@ -208,11 +208,12 @@ Community language files are welcome and the README explains how to add one. The
 
 Confirmed in step 2:
 
-- Node.js on the latest active LTS. Pinned major: 26.
+- Node.js on the latest active LTS. Pinned major: 26 (`.nvmrc`).
 - TypeScript in strict mode, ESM, npm.
 - Argument parsing with the built-in `util.parseArgs`.
 - Vitest for tests, ESLint and Prettier for code quality.
-- Lighthouse and axe-core are added later, in step 3 and step 4.
+- Lighthouse, chrome-launcher, puppeteer-core and axe-core are added in step 4.
+- Supported Node range: `engines.node` is `>=22.19`, the lowest version that Lighthouse 13.6.0 supports. The code of this project needs nothing newer. CI runs on 22.19.0 and on the current LTS (26).
 - Headless Chrome for PDF and PNG output, no other heavy runtime.
 
 ## 14. Docs and demo

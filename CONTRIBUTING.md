@@ -4,7 +4,7 @@ Thank you for helping. This project is small and the plan is in [SCOPE.md](SCOPE
 
 ## Setup
 
-You need Node.js 26 (see `.nvmrc`) and npm.
+You need Node.js 22.19 or newer (`.nvmrc` pins the current LTS, 26) and npm.
 
 ```
 git clone https://github.com/barisgunduz/claude-web-audit.git
@@ -23,6 +23,8 @@ npm run check
 | `npm run format` | Format the code with Prettier |
 | `npm test` | Run the unit tests |
 | `npm run check` | Typecheck, lint and test. CI runs this and the build. |
+
+Tests never use the internet and never need Chrome. Browser tests (local Lighthouse and axe-core against a local page) are skipped by default. Run them with `CWA_E2E=1 npm test`, on a machine with Chrome.
 
 ## Commits
 

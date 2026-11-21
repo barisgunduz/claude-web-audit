@@ -67,16 +67,12 @@ describe('runModule', () => {
     );
   });
 
-  it('keeps speed and a11y not measured with the reason from the spec', async () => {
-    for (const name of ['speed', 'a11y'] as const) {
-      const result = await runModule(MODULES[name], context);
-      expect(result).toMatchObject({
-        module: name,
-        status: 'not_measured',
-        reason: 'implemented in step 4',
-        findings: [],
-      });
-    }
+  it('says not measured for speed and a11y when there is no lab data, no pages and no axe', async () => {
+    const speed = await runModule(MODULES.speed, context);
+    expect(speed.status).toBe('not_measured');
+    const a11y = await runModule(MODULES.a11y, context);
+    expect(a11y).toMatchObject({ status: 'not_measured', findings: [] });
+    expect(a11y.reason).toContain('cwa doctor');
   });
 });
 

@@ -51,9 +51,16 @@ The source of truth for this table is `src/cli/params.ts`. The `--help` text is 
 
 ## What works today
 
-The audit command (`cwa <domain>`) runs the crawler and the modules links, ssl, headers, seo, content, email and ai. It uses `--pages`, `--only`, `--skip`, `--delay`, `--out`, `--config` and `--verbose`. The other parameters are parsed and checked, and have no effect yet. The subcommands other than the audit command exit with code 2.
+The audit command (`cwa <domain>`) runs the crawler and all nine modules. It uses `--pages`, `--only`, `--skip`, `--delay`, `--out`, `--config`, `--verbose`, `--engine`, `--strategy` and `--runs`. The other parameters are parsed and checked, and have no effect yet.
 
-The audit writes `audits/<domain>/<date>/audit.json` (schema version `0-interim`) and prints a summary of at most 10 lines. Ctrl+C stops the crawl, and the findings so far are still written.
+- `--engine`, `--strategy` and `--runs` control the speed module, see [speed-and-engines.md](speed-and-engines.md).
+- Before the first Lighthouse measurement, the audit prints an estimate of the number of runs and a rough duration to the terminal (stderr).
+- The speed and a11y modules need Chrome for local Lighthouse and axe-core. If Chrome is missing, the modules report "not measured" and point to `cwa doctor`.
+- The PageSpeed API key is read from the `PSI_API_KEY` environment variable only. The Chrome path can come from `chromePath` in the config file or from `CHROME_PATH`.
+
+The audit writes `audits/<domain>/<date>/audit.json` (schema version `0-interim`) and prints a summary of at most 10 lines, with the engine that was used and any fallback. Ctrl+C stops the crawl and closes Chrome, and the findings so far are still written.
+
+`cwa doctor` checks the environment and exits with 0 when everything that the chosen engine needs is available, and with 1 otherwise. It uses `--engine` and `--config`.
 
 ## Subcommands
 
@@ -82,6 +89,9 @@ The audit writes `audits/<domain>/<date>/audit.json` (schema version `0-interim`
 | `runs` | Speed measurement repeats |
 | `delay` | Wait between requests in milliseconds |
 | `concurrency` | Requests in flight at once, 1 to 8, default 4 |
+| `speedPages` | Pages that get Lighthouse measurements: the home page plus the most linked pages, 1 to 10, default 3 |
+| `a11yPages` | Pages that get an axe-core run: the home page plus the most linked pages, 1 to 50, default 10 |
+| `chromePath` | Path of the Chrome executable. Without it, `CHROME_PATH` and then the common install locations are used. |
 | `thinContentWords` | Pages with fewer words count as thin content, default 300 |
 | `email.dkimSelectors` | List of DKIM selectors to look up. Without it DKIM is reported as not measured. |
 | `weights` | Module weights, a number of 0 or more per module |
@@ -97,3 +107,5 @@ Unknown fields are rejected. A secret in the config file is rejected with a poin
 | 0 | Success, including `--help` and `--version` |
 | 1 | Invalid input, invalid config or an unexpected error |
 | 2 | The command is not implemented yet |
+
+`cwa doctor` uses 0 for ready and 1 for not ready.

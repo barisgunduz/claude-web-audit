@@ -5,7 +5,7 @@ import { ConfigError } from '../config/validate.js';
 import { runAudit } from './commands/audit.js';
 import { runCompare } from './commands/compare.js';
 import { EXIT_OK, EXIT_USAGE, type CommandContext } from './commands/context.js';
-import { runDoctor } from './commands/doctor.js';
+import { runDoctorCommand } from './commands/doctor.js';
 import { runFix } from './commands/fix.js';
 import { runInit } from './commands/init.js';
 import { runList } from './commands/list.js';
@@ -22,7 +22,7 @@ type Handler = (context: CommandContext) => number | Promise<number>;
 const HANDLERS: Readonly<Record<CommandName, Handler>> = {
   audit: runAudit,
   init: runInit,
-  doctor: runDoctor,
+  doctor: runDoctorCommand,
   fix: runFix,
   verify: runVerify,
   recheck: runRecheck,
@@ -48,7 +48,13 @@ export async function run(
       safeIo.stdout(`${readVersion()}\n`);
       return EXIT_OK;
     }
-    return await HANDLERS[parsed.command]({ parsed, io: safeIo, version: readVersion(), deps });
+    return await HANDLERS[parsed.command]({
+      parsed,
+      io: safeIo,
+      version: readVersion(),
+      deps,
+      env,
+    });
   } catch (error) {
     if (
       error instanceof UsageError ||

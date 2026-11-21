@@ -1,6 +1,6 @@
 # How it works
 
-This page describes the pipeline from a domain name to the output files. The crawler, the first seven modules and `audit.json` work today. Scoring, the report, the card, the social images and `FIX_PLAN.md` come in later steps.
+This page describes the pipeline from a domain name to the output files. The crawler, all nine modules and `audit.json` work today. Scoring, the report, the card, the social images and `FIX_PLAN.md` come in later steps.
 
 ## 1. Normalize the domain
 
@@ -20,7 +20,7 @@ External links are checked for their status code only, up to 200 unique URLs. Th
 
 ## 4. Run modules
 
-Nine modules read the crawl result and run their own checks: links, ssl, headers, seo, content, speed, a11y, email and ai. See [modules.md](modules.md) for what each one checks. A module that fails or cannot reach its data becomes "not measured". It never fails the whole audit.
+Nine modules read the crawl result and run their own checks (speed and a11y also use a browser, see [speed-and-engines.md](speed-and-engines.md)): links, ssl, headers, seo, content, speed, a11y, email and ai. See [modules.md](modules.md) for what each one checks. A module that fails or cannot reach its data becomes "not measured". It never fails the whole audit.
 
 ## 5. Score
 

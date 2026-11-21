@@ -25,6 +25,9 @@ describe('validateConfig', () => {
       delay: 0,
       concurrency: 8,
       thinContentWords: 150,
+      speedPages: 10,
+      a11yPages: 50,
+      chromePath: '/opt/chrome/chrome',
       email: { dkimSelectors: ['google', 'selector1'] },
       weights: { speed: 30 },
       modules: ['seo'],
@@ -44,6 +47,13 @@ describe('validateConfig', () => {
     [{ runs: 99 }, '"runs"'],
     [{ delay: -1 }, '"delay"'],
     [{ concurrency: 0 }, '"concurrency"'],
+    [{ speedPages: 0 }, '"speedPages"'],
+    [{ speedPages: 11 }, '"speedPages"'],
+    [{ speedPages: 2.5 }, '"speedPages"'],
+    [{ a11yPages: 0 }, '"a11yPages"'],
+    [{ a11yPages: 51 }, '"a11yPages"'],
+    [{ chromePath: '' }, '"chromePath"'],
+    [{ chromePath: 7 }, '"chromePath"'],
     [{ concurrency: 9 }, '"concurrency"'],
     [{ concurrency: 4.5 }, '"concurrency"'],
     [{ thinContentWords: 0 }, '"thinContentWords"'],
@@ -129,6 +139,21 @@ describe('resolveSettings merge order', () => {
     expect(settings.modules).toEqual([...MODULE_NAMES]);
     expect(settings.weights).toEqual(DEFAULT_WEIGHTS);
     expect(settings.outputs).toEqual({ card: true, social: false, pdf: true, fixPlan: true });
+  });
+
+  it('defaults speedPages and a11yPages, and takes the Chrome path from the config file', () => {
+    const defaults = resolveSettings({}, {}, 'example.com');
+    expect([defaults.speedPages, defaults.a11yPages, defaults.chromePath]).toEqual([
+      3,
+      10,
+      undefined,
+    ]);
+    const custom = resolveSettings(
+      { speedPages: 5, a11yPages: 20, chromePath: '/c' },
+      {},
+      'example.com',
+    );
+    expect([custom.speedPages, custom.a11yPages, custom.chromePath]).toEqual([5, 20, '/c']);
   });
 
   it('defaults the new fields and takes them from the config file', () => {

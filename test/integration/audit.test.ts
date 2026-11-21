@@ -27,6 +27,9 @@ async function audit(options: DefectOptions = {}) {
         mx: { 'example.test': [{ exchange: 'mail.example.test', priority: 10 }] },
       }),
       now: () => NOW,
+      // No Chrome and no key: nothing in a test may start a browser or call PageSpeed Insights.
+      chrome: { source: 'none' },
+      env: {},
     },
   });
 }
@@ -108,10 +111,16 @@ describe('audit of a site with known defects', () => {
     expect(codes(resultOf(clean.modules, 'links'))).not.toContain('LINK-010');
   });
 
-  it('marks speed and a11y as not measured and email as partly measured', async () => {
+  it('says why speed and a11y could not run without Chrome and a key', async () => {
     const run = await audit();
-    expect(resultOf(run.modules, 'speed').status).toBe('not_measured');
-    expect(resultOf(run.modules, 'a11y').status).toBe('not_measured');
+    const speed = resultOf(run.modules, 'speed');
+    // The header checks need no browser, so speed is partly measured.
+    expect(speed.status).toBe('partial');
+    expect(speed.reason).toContain('PSI_API_KEY is not set and no usable Chrome was found');
+    expect(speed.reason).toContain('cwa doctor');
+    const a11y = resultOf(run.modules, 'a11y');
+    expect(a11y.status).toBe('not_measured');
+    expect(a11y.reason).toContain('cwa doctor');
     const email = resultOf(run.modules, 'email');
     expect(email.status).toBe('partial');
     expect(email.findings).toEqual([]);
